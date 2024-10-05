@@ -87,7 +87,7 @@ export const index = async (req: Request, res: Response) => {
       email: req.session.user?.email,
       user: userBalances, // Kirimkan data user dengan balance yang diperbarui
       alert,
-      title: "User page - Let's Stream",
+      title: "User page - Teman Top",
     });
   } catch (err: any) {
     console.error("Error in index route:", err.message || err);
@@ -107,7 +107,7 @@ export const indexCreate = async (req: Request, res: Response) => {
       name: req.session.user?.username,
       email: req.session.user?.email,
       alert,
-      title: "User page - Let's Stream",
+      title: "User page - Teman Top",
     });
   } catch (err: any) {
     // Jika terjadi kesalahan, redirect ke halaman user
@@ -218,7 +218,7 @@ export const indexEdit = async (req: Request, res: Response) => {
       email: req.session.user?.email,
       user,
       alert,
-      title: "User page - Let's Stream",
+      title: "User page - Teman Top",
     });
   } catch (err: any) {
     // Jika terjadi kesalahan, redirect ke halaman user

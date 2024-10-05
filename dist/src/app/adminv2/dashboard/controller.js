@@ -1,43 +1,83 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+var __awaiter =
+  (this && this.__awaiter) ||
+  function (thisArg, _arguments, P, generator) {
+    function adopt(value) {
+      return value instanceof P
+        ? value
+        : new P(function (resolve) {
+            resolve(value);
+          });
+    }
     return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
+      function fulfilled(value) {
+        try {
+          step(generator.next(value));
+        } catch (e) {
+          reject(e);
+        }
+      }
+      function rejected(value) {
+        try {
+          step(generator["throw"](value));
+        } catch (e) {
+          reject(e);
+        }
+      }
+      function step(result) {
+        result.done
+          ? resolve(result.value)
+          : adopt(result.value).then(fulfilled, rejected);
+      }
+      step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
+  };
+var __importDefault =
+  (this && this.__importDefault) ||
+  function (mod) {
+    return mod && mod.__esModule ? mod : { default: mod };
+  };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.index = void 0;
 const db_1 = __importDefault(require("../../../../db"));
-const index = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const index = (req, res) =>
+  __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {
-        const [agentRows] = yield db_1.default.query("SELECT COUNT(*) AS count FROM user where stream = 1");
-        const [userRows] = yield db_1.default.query("SELECT COUNT(*) AS count FROM user where stream = 0");
-        const [gameRows] = yield db_1.default.query("SELECT COUNT(*) AS count FROM game");
-        const [giftRows] = yield db_1.default.query("SELECT COUNT(*) AS count FROM gift");
-        const [transactionRows] = yield db_1.default.query("SELECT COUNT(*) AS count FROM gift_transaction");
-        res.render("adminv2/index", {
-            name: (_a = req.session.user) === null || _a === void 0 ? void 0 : _a.username,
-            email: (_b = req.session.user) === null || _b === void 0 ? void 0 : _b.email,
-            title: "Dashboard - Let's Stream",
-            count: {
-                agent: agentRows[0].count,
-                user: userRows[0].count,
-                game: gameRows[0].count,
-                gift: giftRows[0].count,
-                transaction: transactionRows[0].count,
-            },
-        });
+      const [agentRows] = yield db_1.default.query(
+        "SELECT COUNT(*) AS count FROM user where stream = 1"
+      );
+      const [userRows] = yield db_1.default.query(
+        "SELECT COUNT(*) AS count FROM user where stream = 0"
+      );
+      const [gameRows] = yield db_1.default.query(
+        "SELECT COUNT(*) AS count FROM game"
+      );
+      const [giftRows] = yield db_1.default.query(
+        "SELECT COUNT(*) AS count FROM gift"
+      );
+      const [transactionRows] = yield db_1.default.query(
+        "SELECT COUNT(*) AS count FROM gift_transaction"
+      );
+      res.render("adminv2/index", {
+        name:
+          (_a = req.session.user) === null || _a === void 0
+            ? void 0
+            : _a.username,
+        email:
+          (_b = req.session.user) === null || _b === void 0 ? void 0 : _b.email,
+        title: "Dashboard - Teman Top",
+        count: {
+          agent: agentRows[0].count,
+          user: userRows[0].count,
+          game: gameRows[0].count,
+          gift: giftRows[0].count,
+          transaction: transactionRows[0].count,
+        },
+      });
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Internal Server Error");
     }
-    catch (err) {
-        console.log(err);
-        res.status(500).send("Internal Server Error");
-    }
-});
+  });
 exports.index = index;
