@@ -1,0 +1,44 @@
+import { Router } from "express";
+import {
+  actionCreate,
+  actionDelete,
+  index,
+  indexCreate,
+  actionEdit,
+  indexEdit,
+  changeStatus,
+  // changeStatusStream,
+  getUserLiveStreamReport,
+} from "./controller";
+import { uploadSingle } from "../../../middleware/uploadImage";
+import { isLoginAdmin } from "../../../middleware/auth";
+
+const router = Router();
+
+// Rute untuk menampilkan halaman agent
+router.get("/", index);
+router.get("/create", isLoginAdmin, indexCreate);
+router.post(
+  "/create",
+  isLoginAdmin,
+  isLoginAdmin,
+
+  uploadSingle("profilePicture"),
+
+  actionCreate
+);
+router.delete("/delete/:id", isLoginAdmin, actionDelete);
+router.get("/edit/:id", isLoginAdmin, indexEdit);
+router.put(
+  "/edit/:id",
+  isLoginAdmin,
+  isLoginAdmin,
+
+  uploadSingle("profilePicture"),
+
+  actionEdit
+);
+router.post("/status/:id", isLoginAdmin, changeStatus);
+router.get("/live_report/:id", isLoginAdmin, getUserLiveStreamReport);
+
+export default router;
