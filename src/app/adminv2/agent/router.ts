@@ -17,28 +17,28 @@ const router = Router();
 
 // Rute untuk menampilkan halaman agent
 router.get("/", index);
-router.get("/create", isLoginAdmin, indexCreate);
+router.get("/create",  indexCreate);
 router.post(
   "/create",
-  isLoginAdmin,
-  isLoginAdmin,
+  
+  
 
   uploadSingle("profilePicture"),
 
   actionCreate
 );
-router.delete("/delete/:id", isLoginAdmin, actionDelete);
-router.get("/edit/:id", isLoginAdmin, indexEdit);
+router.delete("/delete/:id",  actionDelete);
+router.get("/edit/:id",  indexEdit);
 router.put(
   "/edit/:id",
-  isLoginAdmin,
-  isLoginAdmin,
+  
+  
 
   uploadSingle("profilePicture"),
 
   actionEdit
 );
-router.post("/status/:id", isLoginAdmin, changeStatus);
-router.get("/live_report/:id", isLoginAdmin, getUserLiveStreamReport);
+router.post("/status/:id",  changeStatus);
+router.get("/live_report/:id",  getUserLiveStreamReport);
 
 export default router;

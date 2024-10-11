@@ -9,9 +9,9 @@ import { isLoginAdmin } from "../../../middleware/auth";
 const router = Router();
 
 // Rute untuk menampilkan halaman agent
-router.get("/", isLoginAdmin, getTransactions);
-router.get("/summary", isLoginAdmin, getTransactionSummary);
+router.get("/", getTransactions);
+router.get("/summary", getTransactionSummary);
 
-router.get("/export", isLoginAdmin, exportTransactionsToExcel);
+router.get("/export", exportTransactionsToExcel);
 
 export default router;

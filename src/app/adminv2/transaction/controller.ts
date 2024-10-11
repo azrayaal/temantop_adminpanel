@@ -43,7 +43,6 @@ export const getTransactions = async (req: Request, res: Response) => {
         gt.giftId,
         gt.giftName,
         gt.amount,
-        gt.bet_id,
         gt.description,
         gt.createdAt
       FROM gift_transaction gt

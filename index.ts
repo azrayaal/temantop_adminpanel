@@ -14,7 +14,7 @@ import dashboardv2Routes from "./src/app/adminv2/dashboard/router";
 import userv2Routes from "./src/app/adminv2/user/router";
 import agentv2Routes from "./src/app/adminv2/agent/router";
 import giftv2Routes from "./src/app/adminv2/gift/router";
-import gamev2Routes from "./src/app/adminv2/game/router";
+import voucherv2Routes from "./src/app/adminv2/voucher/router";
 import transactionv2Routes from "./src/app/adminv2/transaction/router";
 import authv2Routes from "./src/app/adminv2/auth/router";
 
@@ -89,7 +89,7 @@ app.use("/admin/dashboard", dashboardv2Routes);
 app.use("/admin/user", userv2Routes);
 app.use("/admin/agent", agentv2Routes);
 app.use("/admin/gift", giftv2Routes);
-app.use("/admin/game", gamev2Routes);
+app.use("/admin/voucher", voucherv2Routes);
 app.use("/admin/transaction", transactionv2Routes);
 app.use("/admin/auth", authv2Routes);
 app.use("/admins", adminv2Routes);

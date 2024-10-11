@@ -12,65 +12,79 @@ const formatDate = (date: Date) => {
   return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
 };
 
-interface game extends RowDataPacket {
+interface voucher extends RowDataPacket {
   id: number;
-  gameCode: string;
-  gameName: string;
+  voucherCode: string;
+  voucherName: string;
   create_time: Date;
 }
 
 export const index = async (req: Request, res: Response) => {
   try {
-    // Ambil data dari tabel game
+    // Fungsi untuk memformat angka menjadi format Rupiah
+    const formatRupiah = (angka: number) => {
+      return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    };
+
+    // Ambil data dari tabel voucher
     const alertMessage = req.flash("alertMessage");
     const alertStatus = req.flash("alertStatus");
 
     const alert = { message: alertMessage, status: alertStatus };
-    const [game] = await pool.query("SELECT * FROM game");
-    // Render halaman dengan data game
-    res.render("adminv2/pages/game/index", {
-      game,
+    const [voucher] = await pool.query<voucher[]>("SELECT * FROM voucher");
+
+    // Format harga setiap voucher sebelum dikirim ke EJS
+    const formattedVouchers = voucher.map((v: any) => {
+      return {
+        ...v,
+        formattedPrice: formatRupiah(v.price), // Tambahkan harga yang diformat
+      };
+    });
+
+    // Render halaman dengan data voucher yang sudah diformat
+    res.render("adminv2/pages/voucher/index", {
+      voucher: formattedVouchers,
       alert,
       name: req.session.user?.name,
       email: req.session.user?.email,
-      title: "Halaman game",
+      title: "Halaman voucher",
     });
   } catch (err: any) {
-    // Jika terjadi kesalahan, redirect ke halaman game
+    // Jika terjadi kesalahan, redirect ke halaman voucher
     req.flash("alertMessage", `${err.message}`);
     req.flash("alertStatus", "danger");
-    res.redirect("/admin/game");
+    res.redirect("/admin/voucher");
   }
 };
+
 
 export const indexCreate = async (req: Request, res: Response) => {
   try {
     const [genre] = await pool.query("SELECT * FROM genre");
-    // Render halaman dengan data game
-    res.render("adminv2/pages/game/create", {
+    // Render halaman dengan data voucher
+    res.render("adminv2/pages/voucher/create", {
       name: req.session.user?.name,
       email: req.session.user?.email,
       genre,
-      title: "Halaman create game",
+      title: "Halaman create voucher",
     });
   } catch (err: any) {
-    // Jika terjadi kesalahan, redirect ke halaman game
+    // Jika terjadi kesalahan, redirect ke halaman voucher
     req.flash("alertMessage", `${err.message}`);
     req.flash("alertStatus", "danger");
-    res.redirect("/admin/game");
+    res.redirect("/admin/voucher");
   }
 };
 
 export const actionCreate = async (req: Request, res: Response) => {
   try {
-    const { gameCode, gameName, gameLink, genre } = req.body;
-    const gameImg = req.file?.filename || "";
+    const { name, unique_code, price } = req.body;
 
     const [rows] = await pool.query(
-      "INSERT INTO game (genre, gameCode, gameName, gameLink, gameImg) VALUES (?, ?, ?, ?, ?)",
-      [genre, gameCode, gameName, gameLink, gameImg]
+      "INSERT INTO voucher (name, unique_code, price) VALUES ( ?, ?, ?)",
+      [name, unique_code, price]
     );
-    res.redirect("/admin/game");
+    res.redirect("/admin/voucher");
   } catch (err) {
     res.status(500).send(err);
   }
@@ -80,23 +94,23 @@ export const actionDelete = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const [result] = await pool.query<ResultSetHeader>(
-      "DELETE FROM game WHERE id = ?",
+      "DELETE FROM voucher WHERE id = ?",
       [id]
     );
 
     if (result.affectedRows === 0) {
-      req.flash("alertMessage", "game not found");
+      req.flash("alertMessage", "voucher not found");
       req.flash("alertStatus", "danger");
     } else {
-      req.flash("alertMessage", "Berhasil hapus game");
+      req.flash("alertMessage", "Berhasil hapus voucher");
       req.flash("alertStatus", "success");
     }
 
-    res.redirect("/admin/game");
+    res.redirect("/admin/voucher");
   } catch (err: any) {
     req.flash("alertMessage", `${err.message}`);
     req.flash("alertStatus", "danger");
-    res.redirect("/admin/game");
+    res.redirect("/admin/voucher");
   }
 };
 
@@ -105,33 +119,33 @@ export const indexEdit = async (req: Request, res: Response) => {
     // Ambil ID dari parameter request
     const { id } = req.params;
     const [genre] = await pool.query("SELECT * FROM genre");
-    // Ambil data dari tabel game
-    const [rows] = await pool.query<game[]>("SELECT * FROM game WHERE id = ?", [
+    // Ambil data dari tabel voucher
+    const [rows] = await pool.query<voucher[]>("SELECT * FROM voucher WHERE id = ?", [
       id,
     ]);
 
     // Periksa apakah agen ditemukan
     if (rows.length === 0) {
-      req.flash("alertMessage", "game not found");
+      req.flash("alertMessage", "voucher not found");
       req.flash("alertStatus", "danger");
-      return res.redirect("/admin/game");
+      return res.redirect("/admin/voucher");
     }
 
-    const game = rows[0];
+    const voucher = rows[0];
 
-    // Render halaman dengan data game
-    res.render("adminv2/pages/game/edit", {
-      game,
+    // Render halaman dengan data voucher
+    res.render("adminv2/pages/voucher/edit", {
+      voucher,
       genre,
       name: req.session.user?.name,
       email: req.session.user?.email,
-      title: "Halaman Edit game",
+      title: "Halaman Edit voucher",
     });
   } catch (err: any) {
-    // Jika terjadi kesalahan, redirect ke halaman game
+    // Jika terjadi kesalahan, redirect ke halaman voucher
     req.flash("alertMessage", `${err.message}`);
     req.flash("alertStatus", "danger");
-    res.redirect("/admin/game");
+    res.redirect("/admin/voucher");
   }
 };
 
@@ -139,26 +153,26 @@ export const indexEdit = async (req: Request, res: Response) => {
 export const actionEdit = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { genre, gameName, gameCode, gameLink } = req.body;
-    const gameImg = req.file?.filename || "";
+    const { genre, voucherName, voucherCode, voucherLink } = req.body;
+    const voucherImg = req.file?.filename || "";
 
     const [result] = await pool.query<ResultSetHeader>(
-      "UPDATE game SET genre = ?, gameCode = ?, gameName = ?, gameLink = ?, gameImg = ? WHERE id = ?",
-      [genre, gameCode, gameName, gameLink, gameImg, id]
+      "UPDATE voucher SET genre = ?, voucherCode = ?, voucherName = ?, voucherLink = ?, voucherImg = ? WHERE id = ?",
+      [genre, voucherCode, voucherName, voucherLink, voucherImg, id]
     );
 
     if (result.affectedRows === 0) {
-      req.flash("alertMessage", "game not found");
+      req.flash("alertMessage", "voucher not found");
       req.flash("alertStatus", "danger");
-      return res.redirect("/admin/game");
+      return res.redirect("/admin/voucher");
     }
 
-    req.flash("alertMessage", "Berhasil mengedit game");
+    req.flash("alertMessage", "Berhasil mengedit voucher");
     req.flash("alertStatus", "success");
-    res.redirect("/admin/game");
+    res.redirect("/admin/voucher");
   } catch (err: any) {
     req.flash("alertMessage", `${err.message}`);
     req.flash("alertStatus", "danger");
-    res.redirect("/admin/game");
+    res.redirect("/admin/voucher");
   }
 };
