@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isLoginUser = exports.isLoginAgent = exports.isLoginAdmin = void 0;
+exports.isLoginUser = exports.isLoginAdmin = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const db_1 = __importDefault(require("../../db"));
 const JWT_SECRET = "your_secret_key_here";
@@ -27,28 +27,6 @@ const isLoginAdmin = (req, res, next) => {
     }
 };
 exports.isLoginAdmin = isLoginAdmin;
-const isLoginAgent = (req, res, next) => {
-    var _a, _b;
-    try {
-        const token = (_b = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.replace("Bearer ", "")) !== null && _b !== void 0 ? _b : null;
-        if (!token) {
-            return res
-                .status(401)
-                .json({ message: "Unauthorized: No token provided" });
-        }
-        jsonwebtoken_1.default.verify(token, JWT_SECRET, (err, decoded) => {
-            if (err) {
-                return res.status(401).json({ message: "Unauthorized: Invalid token" });
-            }
-            req.agent = decoded.agentData; // Ensure this contains valid token type
-            next();
-        });
-    }
-    catch (error) {
-        res.status(500).json({ message: "Error processing authentication", error });
-    }
-};
-exports.isLoginAgent = isLoginAgent;
 // export const isLoginUser = async (
 //   req: CustomRequest,
 //   res: Response,

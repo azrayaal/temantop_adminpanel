@@ -13,17 +13,17 @@ export const actionSignin = async (req: Request, res: Response) => {
       "SELECT * FROM admin WHERE username = ?",
       [username]
     );
-
+    
+console.log(result)
     const rows = result as any[];
 
     if (rows.length > 0) {
       const admin = rows[0];
-      // Cek admin status
+    
       if (admin.status === 1) {
         const checkPassword = await bcrypt.compare(password, admin.password);
-
+        
         if (checkPassword) {
-          // if (password === admin.password) {
           req.session.user = {
             id: admin.id,
             username: admin.username,
@@ -32,6 +32,7 @@ export const actionSignin = async (req: Request, res: Response) => {
             email: admin.email,
             name: admin.name,
           };
+
           res.redirect("/admin/dashboard");
         } else {
           req.flash("alertMessage", "Wrong password");

@@ -87,7 +87,6 @@
                   <th id="receiverHeader" class="sortable">Receiver Id</th>
                   <th id="giftNameHeader" class="sortable">Gift Name</th>
                   <th id="amountHeader" class="sortable">Amount</th>
-                  <th id="bet_idHeader" class="sortable">Bet Id</th>
                   <th id="descriptionHeader" class="sortable">Description</th>
                   <th id="dateHeader" class="sortable">Transaction Date</th>
                 </tr>
@@ -104,7 +103,6 @@
                   <td><%= transactions[i].receiverPlayerId %></td>
                   <td><%= transactions[i].giftName %></td>
                   <td><%= parseFloat(transactions[i].amount).toFixed(2) %></td>
-                  <td><%= transactions[i].bet_id %></td>
                   <td><%= transactions[i].description %></td>
                   <td>
                     <%= new Date(transactions[i].createdAt).toLocaleString() %>
@@ -133,7 +131,7 @@
         class="text-muted text-center text-sm-left d-block d-sm-inline-block"
       >
         Copyright © 2024
-        <a href="https://www.bootstrapdash.com/" target="_blank">Teman Top</a>.
+        <a href="https://www.bootstrapdash.com/" target="_blank">Yong</a>.
         All rights reserved.
       </span>
     </div>

@@ -69,7 +69,6 @@ const getTransactions = (req, res) => __awaiter(void 0, void 0, void 0, function
         gt.giftId,
         gt.giftName,
         gt.amount,
-        gt.bet_id,
         gt.description,
         gt.createdAt
       FROM gift_transaction gt

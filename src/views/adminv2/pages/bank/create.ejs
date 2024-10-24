@@ -1,0 +1,139 @@
+<%- include('../../components/header.ejs') %>
+<!-- partial -->
+<div class="container-fluid page-body-wrapper bg-black">
+  <%- include('../../components/navbar.ejs') %>
+  <!-- partial:partials/_navbar.html -->
+
+  <!-- Tambahkan margin-top atau padding-top untuk menghindari navbar menutupi konten -->
+  <div class="content-wrapper" style="padding-top: 80px">
+    <!-- Sesuaikan 80px sesuai dengan tinggi navbar -->
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="row mb-2 d-flex align-items-center justify-content-between">
+        <div class="col-sm-6">
+          <h1>Form add Bank</h1>
+        </div>
+        <div class="col-sm-6 d-flex justify-content-end">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/admin/dashboard">Home</a></li>
+            <li class="breadcrumb-item"><a href="/admin/voucher">Bank</a></li>
+            <li class="breadcrumb-item active">Create</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <!-- /.card-header -->
+              <div class="card-body">
+                <div class="card card-primary">
+                  <div class="card-header">
+                    <!-- <h3 class="card-title">Form tambah data Bank</h3> -->
+                  </div>
+                  <!-- /.card-header -->
+                  <!-- form start -->
+                  <form action="/admin/bank/create" method="POST" >
+                    <div class="card-body">
+                      <div class="form-group">
+                        <label for="name">Bank Name</label>
+                        <input
+                          type="text"
+                          name="name"
+                          class="form-control"
+                          id="name"
+                          placeholder="Bank Name"
+                          required
+                        />
+                      </div>
+                  
+                      <div class="form-group">
+                        <label for="bank_code">Bank Code</label>
+                        <input
+                          type="text"
+                          name="bank_code"
+                          class="form-control"
+                          id="bank_code"
+                          placeholder="Bank Code"
+                          required
+                        />
+                      </div>
+                    </div>
+                  
+                    <div class="card-footer">
+                      <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Simpan
+                      </button>
+                      <button type="button" class="btn btn-secondary">
+                        <a href="/admin/voucher" style="color: red">
+                          <i class="fa fa-undo"></i> Cancel
+                        </a>
+                      </button>
+                    </div>
+                  </form>
+                  
+                </div>
+              </div>
+            </div>
+            <!-- /.card -->
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+        </div>
+        <!-- /.row -->
+      </div>
+      <!-- /.container-fluid -->
+    </section>
+  </div>
+</div>
+<!-- page-body-wrapper ends -->
+<%- include('../../components/footer.ejs') %>
+
+<!-- Tambahkan fungsi untuk preview gambar dan toggle password -->
+<script>
+  // Fungsi untuk menampilkan preview gambar
+  function previewImage(event) {
+    var input = event.target;
+    var reader = new FileReader();
+
+    reader.onload = function () {
+      var dataURL = reader.result;
+      var output = document.getElementById("profile-preview");
+      output.src = dataURL;
+      output.style.display = "block"; // Menampilkan gambar preview
+    };
+
+    reader.readAsDataURL(input.files[0]);
+  }
+
+  // Fungsi untuk toggle visibility password
+  function togglePassword() {
+    var passwordField = document.getElementById("password");
+    if (passwordField.type === "password") {
+      passwordField.type = "text"; // Menampilkan password
+    } else {
+      passwordField.type = "password"; // Menyembunyikan password
+    }
+  }
+</script>
+
+<script>
+  // Fungsi untuk generate kode voucher acak
+  function generateVoucherCode() {
+    var length = 12; // Panjang kode voucher
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; // Karakter yang digunakan untuk kode
+    var charactersLength = characters.length;
+    var result = '';
+
+    for (var i = 0; i < length; i++) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+
+    // Masukkan hasil kode voucher ke dalam input field
+    document.getElementById('unique_code').value = result;
+  }
+</script>

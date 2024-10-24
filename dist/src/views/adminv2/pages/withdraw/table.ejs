@@ -1,0 +1,91 @@
+<div class="main-panel">
+  <div class="content-wrapper">
+    <div class="page-header">
+      <div class="d-flex justify-content-between align-items-center">
+        <h3 class="page-title">Request Withdraws</h3>
+        <h3 class="card-title ms-4">
+        </h3>
+      </div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item active" aria-current="page">withdraw</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="row">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <!-- <h4 class="card-title mb-0">Table withdraw</h4> -->
+            <input
+              type="text"
+              id="searchInput"
+              class="form-control w-25"
+              onkeyup="searchTable()"
+              placeholder="Search for names.."
+            />
+          </div>
+          <div class="table-responsive">
+            <table class="table table-bordered" id="withdrawTable">
+              <thead>
+                <tr>
+                  <th style="width: 7%">No</th>
+                  <th>Request by</th>
+                  <th>user id</th>
+                  <th>amount</th>
+                  <th>Bank Name</th>
+                  <th>status</th>
+                  <th style="width: 5%;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% for(let i = 0; i < withdraw.length; i++){ %>
+                <tr>
+                  <td><%= i + 1 %></td>
+                  <td><%= withdraw[i].username %></td>
+                  <td><%= withdraw[i].player_id %></td>
+                  <td><%= withdraw[i].amount %></td>
+                  <td><%= withdraw[i].bank_name %></td>
+                  <td class="form-control 
+                  <%=  withdraw[i].status === 'pending' ? 'bg-warning' : '' %>
+                  <%=  withdraw[i].status === 'approved' ? 'bg-success' : '' %>
+                  <%=  withdraw[i].status === 'rejected' ? 'bg-danger' : '' %>"
+                value="<%=  withdraw[i].status %>" ><%= withdraw[i].status %></td>
+                  <td>
+                    <a
+                      href="/admin/withdraw/detail/<%= withdraw[i].id %>"
+                      class="btn btn-primary"
+                    >
+                      <i class="fas fa-pencil-alt"></i> Detail
+                    </a>
+                  </form>
+                  </td>
+                </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="footer">
+    <div class="d-sm-flex justify-content-center justify-content-sm-between">
+      <span
+        class="text-muted text-center text-sm-left d-block d-sm-inline-block"
+        >Copyright © 2024
+        <a href="/" target="_blank">Yong</a>.
+        All rights reserved.</span
+      >
+    </div>
+  </footer>
+</div>
+
+<style>
+  .online {
+    color: green;
+  }
+  .offline {
+    color: red;
+  }
+</style>

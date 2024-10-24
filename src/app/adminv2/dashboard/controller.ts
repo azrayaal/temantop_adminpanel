@@ -23,7 +23,7 @@ export const index = async (req: Request, res: Response) => {
     res.render("adminv2/index", {
       name: req.session.user?.username,
       email: req.session.user?.email,
-      title: "Dashboard - Teman Top",
+      title: "Dashboard - Yong",
       count: {
         agent: agentRows[0].count,
         user: userRows[0].count,

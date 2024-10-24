@@ -31,63 +31,14 @@ export const index = async (req: Request, res: Response) => {
       rejectUnauthorized: false, // Abaikan verifikasi SSL (jika perlu)
     });
 
-    // Membuat array user dengan balance yang diperbarui dari API
-    const userBalances = await Promise.all(
-      users.map(async (user: any) => {
-        try {
-          const { player_id } = user; // Ambil player_id dari user
-
-          // Jika player_id ada, ambil balance dari API
-          if (player_id) {
-            const balanceResponse = await axios.post(
-              "https://api.innovativetechnology.my.id/api/v1/str/balance",
-              { player_id: player_id }, // Kirimkan player_id
-              {
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                httpsAgent: agent, // Menggunakan agent SSL
-                timeout: 20000, // Timeout selama 20 detik
-              }
-            );
-
-            // Ambil balance dari response API
-            const balance = balanceResponse.data?.data?.data || 0; // Default balance 0 jika tidak ada data
-
-            // Return user dengan balance yang diperbarui
-            return {
-              ...user,
-              balance,
-            };
-          } else {
-            // Jika tidak ada player_id, kembalikan balance 0
-            return {
-              ...user,
-              balance: 0,
-            };
-          }
-        } catch (error: any) {
-          console.error(
-            `Error fetching balance for player_id ${user.player_id}:`,
-            error.message || error
-          );
-
-          // Jika ada error API, kembalikan balance 0
-          return {
-            ...user,
-            balance: 0,
-          };
-        }
-      })
-    );
 
     // Render halaman dengan user yang sudah di-update balance-nya
     res.render("adminv2/pages/user/index", {
       name: req.session.user?.username,
       email: req.session.user?.email,
-      user: userBalances, // Kirimkan data user dengan balance yang diperbarui
+      user: users, // Kirimkan data user dengan balance yang diperbarui
       alert,
-      title: "User page - Teman Top",
+      title: "User page - Yong",
     });
   } catch (err: any) {
     console.error("Error in index route:", err.message || err);
@@ -107,7 +58,7 @@ export const indexCreate = async (req: Request, res: Response) => {
       name: req.session.user?.username,
       email: req.session.user?.email,
       alert,
-      title: "User page - Teman Top",
+      title: "User page - Yong",
     });
   } catch (err: any) {
     // Jika terjadi kesalahan, redirect ke halaman user
@@ -218,7 +169,7 @@ export const indexEdit = async (req: Request, res: Response) => {
       email: req.session.user?.email,
       user,
       alert,
-      title: "User page - Teman Top",
+      title: "User page - Yong",
     });
   } catch (err: any) {
     // Jika terjadi kesalahan, redirect ke halaman user
@@ -375,9 +326,6 @@ export const getUserTransactions = async (req: Request, res: Response) => {
       };
     });
     // Log transactions with amounts for debugging
-    console.log(id);
-    console.log(transactionRows);
-    console.log("Transactions With Amounts:", transactionsWithAmounts);
 
     res.render("adminv2/pages/user/report", {
       title: "Transaction Report",

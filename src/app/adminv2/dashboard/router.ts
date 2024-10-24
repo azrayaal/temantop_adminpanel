@@ -5,7 +5,7 @@ import { isLoginAdmin } from "../../../middleware/auth";
 const router = Router();
 
 // router.use(isLoginAdmin);
-router.get("/", index);
+router.get("/", isLoginAdmin, index);
 // router.get("/", index);
 
 export default router;

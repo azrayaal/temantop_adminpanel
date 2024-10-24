@@ -32,33 +32,6 @@ interface CustomRequest extends Request {
   user?: { userId?: any };
 }
 
-export const isLoginAgent = (
-  req: CustomRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const token = req.headers.authorization?.replace("Bearer ", "") ?? null;
-
-    if (!token) {
-      return res
-        .status(401)
-        .json({ message: "Unauthorized: No token provided" });
-    }
-
-    jwt.verify(token, JWT_SECRET, (err, decoded: any) => {
-      if (err) {
-        return res.status(401).json({ message: "Unauthorized: Invalid token" });
-      }
-
-      req.agent = decoded.agentData; // Ensure this contains valid token type
-      next();
-    });
-  } catch (error) {
-    res.status(500).json({ message: "Error processing authentication", error });
-  }
-};
-
 // export const isLoginUser = async (
 //   req: CustomRequest,
 //   res: Response,

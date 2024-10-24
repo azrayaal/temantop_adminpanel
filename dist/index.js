@@ -27,11 +27,13 @@ const router_2 = __importDefault(require("./src/app/adminv2/dashboard/router"));
 const router_3 = __importDefault(require("./src/app/adminv2/user/router"));
 const router_4 = __importDefault(require("./src/app/adminv2/agent/router"));
 const router_5 = __importDefault(require("./src/app/adminv2/gift/router"));
-const router_6 = __importDefault(require("./src/app/adminv2/game/router"));
+const router_6 = __importDefault(require("./src/app/adminv2/voucher/router"));
 const router_7 = __importDefault(require("./src/app/adminv2/transaction/router"));
 const router_8 = __importDefault(require("./src/app/adminv2/auth/router"));
+const router_9 = __importDefault(require("./src/app/adminv2/bank/router"));
+const router_10 = __importDefault(require("./src/app/adminv2/withdraw/router"));
 dotenv_1.default.config();
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 3307;
 const app = (0, express_1.default)();
 const URL = `/api/v1`;
 // Create an HTTP server
@@ -51,10 +53,10 @@ app.use((0, express_session_1.default)({
     resave: false,
     saveUninitialized: true,
     cookie: {
-        httpOnly: true, // Mencegah akses cookies melalui JavaScript
-        sameSite: "none", // Memungkinkan cookies diakses dalam iframe lintas domain
-        // secure: true, // Hanya mengizinkan cookie melalui HTTPS
-        maxAge: 24 * 60 * 60 * 1000, // Masa berlaku cookies (1 hari)
+        httpOnly: true,
+        sameSite: "lax", // Set to 'lax' or 'strict' for local development
+        // secure: true, // Uncomment only when using HTTPS
+        maxAge: 24 * 60 * 60 * 1000, // 1 day
     },
 }));
 app.use((0, connect_flash_1.default)());
@@ -74,10 +76,12 @@ app.use("/admin/dashboard", router_2.default);
 app.use("/admin/user", router_3.default);
 app.use("/admin/agent", router_4.default);
 app.use("/admin/gift", router_5.default);
-app.use("/admin/game", router_6.default);
+app.use("/admin/voucher", router_6.default);
 app.use("/admin/transaction", router_7.default);
 app.use("/admin/auth", router_8.default);
 app.use("/admins", router_1.default);
+app.use("/admin/bank", router_9.default);
+app.use("/admin/withdraw", router_10.default);
 // Start the server
 server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);

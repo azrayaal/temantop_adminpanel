@@ -15,24 +15,24 @@ import { isLoginAdmin } from "../../../middleware/auth";
 const router = Router();
 
 // Rute untuk menampilkan halaman agent
-router.get("/", index);
-router.get("/create",  indexCreate);
+router.get("/",  isLoginAdmin,index);
+router.get("/create",  isLoginAdmin, indexCreate);
 router.post(
   "/create",
-  
+ isLoginAdmin,  
   uploadSingle("profilePicture"),
   actionCreate
 );
-router.delete("/delete/:id",  actionDelete);
-router.get("/edit/:id",  indexEdit);
+router.delete("/delete/:id",  isLoginAdmin, actionDelete);
+router.get("/edit/:id",  isLoginAdmin, indexEdit);
 router.put(
   "/edit/:id",
-  
+ isLoginAdmin,  
 
   uploadSingle("profilePicture"),
   actionEdit
 );
-router.get("/transaction/:id",  getUserTransactions);
-router.post("/status/:id",  changeStatus);
+router.get("/transaction/:id",  isLoginAdmin, getUserTransactions);
+router.post("/status/:id",  isLoginAdmin, changeStatus);
 
 export default router;

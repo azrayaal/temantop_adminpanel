@@ -17,6 +17,8 @@ import giftv2Routes from "./src/app/adminv2/gift/router";
 import voucherv2Routes from "./src/app/adminv2/voucher/router";
 import transactionv2Routes from "./src/app/adminv2/transaction/router";
 import authv2Routes from "./src/app/adminv2/auth/router";
+import bankRoutes from "./src/app/adminv2/bank/router";
+import withdrawRoutes from "./src/app/adminv2/withdraw/router";
 
 dotenv.config();
 
@@ -45,13 +47,14 @@ app.use(
     resave: false,
     saveUninitialized: true,
     cookie: {
-      httpOnly: true, // Mencegah akses cookies melalui JavaScript
-      sameSite: "none", // Memungkinkan cookies diakses dalam iframe lintas domain
-      // secure: true, // Hanya mengizinkan cookie melalui HTTPS
-      maxAge: 24 * 60 * 60 * 1000, // Masa berlaku cookies (1 hari)
+      httpOnly: true,
+      sameSite: "lax", // Set to 'lax' or 'strict' for local development
+      // secure: true, // Uncomment only when using HTTPS
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
     },
   })
 );
+
 
 declare module "express-session" {
   interface SessionData {
@@ -93,6 +96,8 @@ app.use("/admin/voucher", voucherv2Routes);
 app.use("/admin/transaction", transactionv2Routes);
 app.use("/admin/auth", authv2Routes);
 app.use("/admins", adminv2Routes);
+app.use("/admin/bank", bankRoutes);
+app.use("/admin/withdraw", withdrawRoutes);
 
 // Start the server
 server.listen(port, () => {
