@@ -18,6 +18,6 @@ router.get("/create", isLoginAdmin, indexCreate);
 router.post("/create", isLoginAdmin, uploadSingle("img"), actionCreate);
 router.delete("/delete/:id", isLoginAdmin, actionDelete);
 router.get("/edit/:id", isLoginAdmin, indexEdit);
-router.put("/edit/:id", isLoginAdmin, actionEdit);
+router.put("/edit/:id", isLoginAdmin, uploadSingle("img"), actionEdit);
 
 export default router;

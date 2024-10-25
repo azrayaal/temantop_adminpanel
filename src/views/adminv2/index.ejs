@@ -12,30 +12,35 @@
             <div class="card-body">
               <div class="row">
                 <div class="col-9">
-                  <div class="d-flex align-items-center align-self-start">
-                    <h3 class="mb-0">USER</h3>
-                  </div>
+                  <a href="/admin/user" style="color: #ffffff; text-decoration: none;">
+                    <div class="d-flex align-items-center align-self-start">
+                      <h3 class="mb-0" style="color: #ffffff;">USER</h3>
+                    </div>
+                  </a>
                 </div>
                 <div class="col-3">
                   <div class="icon icon-box-success">
-                    <span class="fa fa-user"></span>
+                    <span class="fa fa-user" ></span>
                   </div>
                 </div>
-                <p class="text-success ms-2 mb-0 font-weight-medium">
+                <p class="text-success ms-2 mb-0 font-weight-medium" style="color: #ffffff;">
                   <%= count.user %>
                 </p>
               </div>
             </div>
           </div>
         </div>
+        
         <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
           <div class="card">
             <div class="card-body">
               <div class="row">
                 <div class="col-9">
-                  <div class="d-flex align-items-center align-self-start">
-                    <h3 class="mb-0">AGENT</h3>
-                  </div>
+                  <a href="/admin/agent" style="color: #ffffff; text-decoration: none;">
+                    <div class="d-flex align-items-center align-self-start">
+                      <h3 class="mb-0" style="color: #ffffff;">AGENT</h3>
+                    </div>
+                  </a>
                 </div>
                 <div class="col-3">
                   <div class="icon icon-box-danger">
@@ -54,30 +59,11 @@
             <div class="card-body">
               <div class="row">
                 <div class="col-9">
-                  <div class="d-flex align-items-center align-self-start">
-                    <h3 class="mb-0">GAME</h3>
-                  </div>
-                </div>
-                <div class="col-3">
-                  <div class="icon icon-box-warning">
-                    <span class="fa fa-puzzle-piece"></span>
-                  </div>
-                </div>
-                <p class="text-warning ms-2 mb-0 font-weight-medium">
-                  <%= count.game %>
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
-          <div class="card">
-            <div class="card-body">
-              <div class="row">
-                <div class="col-9">
-                  <div class="d-flex align-items-center align-self-start">
-                    <h3 class="mb-0">GIFT</h3>
-                  </div>
+                  <a href="/admin/gift" style="color: #ffffff; text-decoration: none;">
+                    <div class="d-flex align-items-center align-self-start">
+                      <h3 class="mb-0" style="color: #ffffff;">GIFT</h3>
+                    </div>
+                  </a>
                 </div>
                 <div class="col-3">
                   <div class="icon icon-box-primary">
@@ -91,35 +77,62 @@
             </div>
           </div>
         </div>
-        <!-- <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
-                <div class="card">
-                  <div class="card-body">
-                    <div class="row">
-                      <div class="col-9">
-                        <div class="d-flex align-items-center align-self-start">
-                          <h3 class="mb-0">LIVE</h3>
-                          
-                        </div>
-                      </div>
-                      <div class="col-3">
-                        <div class="icon icon-box-success ">
-                          <span class="mdi mdi-arrow-top-right icon-item"></span>
-                        </div>
-                      </div>
-                      <p class="text-success ms-2 mb-0 font-weight-medium">TOTAL</p>
-                    </div>
-                  </div>
-                </div>
-              </div> -->
         <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
-          <!-- <a href="/transaction"> -->
           <div class="card">
             <div class="card-body">
               <div class="row">
                 <div class="col-9">
-                  <div class="d-flex align-items-center align-self-start">
-                    <h3 class="mb-0">TRANSACTION</h3>
+                  <a href="/admin/voucher" style="color: #ffffff; text-decoration: none;">
+                    <div class="d-flex align-items-center align-self-start">
+                      <h3 class="mb-0" style="color: #ffffff;">VOUCHER</h3>
+                    </div>
+                  </a>
+                </div>
+                <div class="col-3">
+                  <div class="icon icon-box-warning">
+                    <span class="fa fa-ticket"></span>
                   </div>
+                </div>
+                <p class="text-warning ms-2 mb-0 font-weight-medium">
+                  <%= count.voucher %>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
+          <div class="card">
+            <div class="card-body">
+              <div class="row">
+                <div class="col-9">
+                  <a href="/admin/bank" style="color: #ffffff; text-decoration: none;">
+                    <div class="d-flex align-items-center align-self-start">
+                      <h3 class="mb-0" style="color: #ffffff;">BANK</h3>
+                    </div>
+                  </a>
+                </div>
+                <div class="col-3">
+                  <div class="icon icon-box-primary">
+                    <span class="fa fa-money"></span>
+                  </div>
+                </div>
+                <p class="text-primary ms-2 mb-0 font-weight-medium">
+                  <%= count.bank %>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
+          <div class="card">
+            <div class="card-body">
+              <div class="row">
+                <div class="col-9">
+                  <a href="/admin/transaction" style="color: #ffffff; text-decoration: none;">
+                    <div class="d-flex align-items-center align-self-start">
+                      <h3 class="mb-0" style="color: #ffffff;">TRANSACTION</h3>
+                    </div>
+                  </a>
                 </div>
                 <div class="col-3">
                   <div class="icon icon-box-success">

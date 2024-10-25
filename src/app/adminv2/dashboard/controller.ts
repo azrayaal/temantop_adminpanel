@@ -10,11 +10,14 @@ export const index = async (req: Request, res: Response) => {
     const [userRows] = await pool.query<RowDataPacket[]>(
       "SELECT COUNT(*) AS count FROM user where stream = 0"
     );
-    const [gameRows] = await pool.query<RowDataPacket[]>(
-      "SELECT COUNT(*) AS count FROM game"
-    );
     const [giftRows] = await pool.query<RowDataPacket[]>(
       "SELECT COUNT(*) AS count FROM gift"
+    );
+    const [voucherRows] = await pool.query<RowDataPacket[]>(
+      "SELECT COUNT(*) AS count FROM voucher"
+    );
+    const [bankRows] = await pool.query<RowDataPacket[]>(
+      "SELECT COUNT(*) AS count FROM bank"
     );
     const [transactionRows] = await pool.query<RowDataPacket[]>(
       "SELECT COUNT(*) AS count FROM gift_transaction"
@@ -27,8 +30,9 @@ export const index = async (req: Request, res: Response) => {
       count: {
         agent: agentRows[0].count,
         user: userRows[0].count,
-        game: gameRows[0].count,
         gift: giftRows[0].count,
+        voucher: voucherRows[0].count,
+        bank: bankRows[0].count,
         transaction: transactionRows[0].count,
       },
     });

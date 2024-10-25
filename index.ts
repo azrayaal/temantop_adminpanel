@@ -45,7 +45,7 @@ app.use(
   session({
     secret: "keyboard cat",
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: {
       httpOnly: true,
       sameSite: "lax", // Set to 'lax' or 'strict' for local development
@@ -54,7 +54,6 @@ app.use(
     },
   })
 );
-
 
 declare module "express-session" {
   interface SessionData {

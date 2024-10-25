@@ -1,11 +1,7 @@
 <%- include('../../components/header.ejs') %>
-<!-- partial -->
 <div class="container-fluid page-body-wrapper bg-black">
-  <!-- partial:partials/_navbar.html -->
   <%- include('../../components/navbar.ejs') %>
   <div class="content-wrapper" style="padding-top: 80px">
-    <!-- Sesuaikan 80px sesuai dengan tinggi navbar -->
-    <!-- Content Header (Page header) -->
     <section class="content-header">
       <div class="row mb-2 d-flex align-items-center justify-content-between">
         <div class="col-sm-6">
@@ -21,13 +17,12 @@
       </div>
     </section>
 
-    <!-- Main content -->
     <section class="content">
       <div class="container-fluid">
+        <%- include ('../../components/messages.ejs')%>
         <div class="row">
           <div class="col-12">
             <div class="card">
-              <!-- /.card-header -->
               <div class="card-body">
                 <div class="card card-primary">
                   <div class="card-header">
@@ -35,24 +30,19 @@
                       Form edit data gift <%= gift.giftName %>
                     </h3>
                   </div>
-                  <!-- /.card-header -->
-                  <!-- form start -->
                   <form
                     action="/admin/gift/edit/<%= gift.id %>?_method=PUT"
                     method="POST"
+                    enctype="multipart/form-data"
                   >
                     <div class="card-body">
                       <div class="form-group">
                         <label for="img">Image</label>
-                        <input
-                          type="text"
-                          name="img"
-                          class="form-control-file"
-                          id="img"
-                          value="<%= gift.img %>"
-                          placeholder="Nama gift"
-                          required
-                        />
+                        <input type="file" name="img" class="form-control-file" id="img" accept="image/*" onchange="previewImage(event)" />
+                      </div>
+                      
+                      <div class="form-group">
+                        <img id="profile-preview" src="<%= gift.img %>" alt="Image Preview" style="width: 100px; height: 100px; border-radius: 100%;" class="img-thumbnail" />
                       </div>
 
                       <div class="form-group">
@@ -100,7 +90,7 @@
                         <i class="fas fa-save"></i> Simpan
                       </button>
                       <button type="button" class="btn btn-secondary">
-                        <a href="/admin/gift" style="color: white"
+                        <a href="/admin/gift" style="color: red"
                           ><i class="fa fa-undo"></i> Cancel</a
                         >
                       </button>
@@ -109,22 +99,15 @@
                 </div>
               </div>
             </div>
-            <!-- /.card -->
           </div>
-          <!-- /.col -->
         </div>
-        <!-- /.row -->
       </div>
-      <!-- /.container-fluid -->
     </section>
   </div>
 </div>
-<!-- page-body-wrapper ends -->
 <%- include('../../components/footer.ejs') %>
 
-<!-- Script untuk preview gambar dan toggle password -->
 <script>
-  // Fungsi untuk menampilkan preview gambar yang dipilih
   function previewImage(event) {
     var input = event.target;
     var reader = new FileReader();
@@ -133,31 +116,42 @@
       var dataURL = reader.result;
       var output = document.getElementById("profile-preview");
       output.src = dataURL;
-      output.style.display = "block"; // Menampilkan gambar preview setelah file dipilih
+      output.style.display = "block"; 
     };
 
-    reader.readAsDataURL(input.files[0]); // Membaca gambar
+    reader.readAsDataURL(input.files[0]); 
   }
 
-  // Fungsi untuk menampilkan atau menyembunyikan password
   function togglePassword() {
     var passwordField = document.getElementById("password");
     if (passwordField.type === "password") {
-      passwordField.type = "text"; // Menampilkan password
+      passwordField.type = "text"; 
     } else {
-      passwordField.type = "password"; // Menyembunyikan password
+      passwordField.type = "password"; 
     }
   }
 </script>
 
-<!-- Custom CSS untuk mengubah warna tombol "Browse" menjadi biru -->
 <style>
   .custom-file-input:lang(en) ~ .custom-file-label::after {
     content: "Browse";
-    color: blue; /* Mengubah warna teks "Browse" menjadi biru */
+    color: blue;
   }
 
   .custom-file-input {
-    border-color: blue; /* Mengubah warna border tombol file input */
+    border-color: blue; 
   }
 </style>
+<script>
+  function previewImage(event) {
+    var reader = new FileReader();
+    var preview = document.getElementById('profile-preview');
+    
+    reader.onload = function() {
+      preview.src = reader.result;
+      preview.style.display = 'block';
+    };
+
+    reader.readAsDataURL(event.target.files[0]);
+  }
+</script>

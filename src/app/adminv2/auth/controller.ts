@@ -14,7 +14,6 @@ export const actionSignin = async (req: Request, res: Response) => {
       [username]
     );
     
-console.log(result)
     const rows = result as any[];
 
     if (rows.length > 0) {
