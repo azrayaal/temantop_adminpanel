@@ -19,8 +19,9 @@ const index = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const [agentRows] = yield db_1.default.query("SELECT COUNT(*) AS count FROM user where stream = 1");
         const [userRows] = yield db_1.default.query("SELECT COUNT(*) AS count FROM user where stream = 0");
-        const [gameRows] = yield db_1.default.query("SELECT COUNT(*) AS count FROM game");
         const [giftRows] = yield db_1.default.query("SELECT COUNT(*) AS count FROM gift");
+        const [voucherRows] = yield db_1.default.query("SELECT COUNT(*) AS count FROM voucher");
+        const [bankRows] = yield db_1.default.query("SELECT COUNT(*) AS count FROM bank");
         const [transactionRows] = yield db_1.default.query("SELECT COUNT(*) AS count FROM gift_transaction");
         res.render("adminv2/index", {
             name: (_a = req.session.user) === null || _a === void 0 ? void 0 : _a.username,
@@ -29,8 +30,9 @@ const index = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             count: {
                 agent: agentRows[0].count,
                 user: userRows[0].count,
-                game: gameRows[0].count,
                 gift: giftRows[0].count,
+                voucher: voucherRows[0].count,
+                bank: bankRows[0].count,
                 transaction: transactionRows[0].count,
             },
         });

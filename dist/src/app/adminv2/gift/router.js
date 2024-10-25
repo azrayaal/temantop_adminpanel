@@ -11,5 +11,5 @@ router.get("/create", auth_1.isLoginAdmin, controller_1.indexCreate);
 router.post("/create", auth_1.isLoginAdmin, (0, uploadImage_1.uploadSingle)("img"), controller_1.actionCreate);
 router.delete("/delete/:id", auth_1.isLoginAdmin, controller_1.actionDelete);
 router.get("/edit/:id", auth_1.isLoginAdmin, controller_1.indexEdit);
-router.put("/edit/:id", auth_1.isLoginAdmin, controller_1.actionEdit);
+router.put("/edit/:id", auth_1.isLoginAdmin, (0, uploadImage_1.uploadSingle)("img"), controller_1.actionEdit);
 exports.default = router;

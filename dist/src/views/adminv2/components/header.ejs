@@ -50,7 +50,7 @@
     <!-- Layout styles -->
     <link rel="stylesheet" href="/corona/dist/assets/css/style.css" />
     <!-- End layout styles -->
-    <link rel="shortcut icon" href="./assets/letsstreamlogo.png" />
+    <link rel="shortcut icon" href="/assets/yong.png" />
   </head>
   <body>
     <div class="container-scroller" style="min-height: 100vh">
@@ -60,14 +60,14 @@
           class="sidebar-brand-wrapper d-flex align-items-center justify-content-center fixed-top"
         >
           <!-- Logo yang tampil di tampilan besar -->
-          <!-- <a class="brand-logo d-none d-lg-flex" href="dashboard">
-            <img src="./assets/letsstreamlogo.png" style="height: 50px; width: 50px;" alt="logos" />
-          </a>   -->
+          <a class="brand-logo d-none d-lg-flex" href="/admin/dashboard">
+            <img src="/assets/yong.png" style="height: 50px; width: 50px;" alt="logos" />
+          </a>  
 
           <!-- Logo kecil yang tampil di tampilan kecil -->
-          <!-- <a class="brand-logo-mini d-lg-none" href="index.html">
-            <img src="./assets/letsstreamlogo.png" style="height: 50px; width: 50px;" alt="logo" />
-          </a> -->
+          <a class="brand-logo-mini d-lg-none" href="/admin/dashboard">
+            <img src="/assets/yong.png" style="height: 50px; width: 50px;" alt="logo" />
+          </a>
         </div>
 
         <ul class="nav">
@@ -125,46 +125,82 @@
               </ul>
             </div>
           </li>
-          <li class="nav-item menu-items">
+          <!-- <li class="nav-item menu-items">
             <a class="nav-link" href="/admin/voucher">
               <span class="menu-icon">
                 <i class="fa fa-ticket"></i>
               </span>
               <span class="menu-title">Voucher</span>
             </a>
-          </li>
-          <li class="nav-item menu-items">
+          </li> -->
+          <!-- <li class="nav-item menu-items">
             <a class="nav-link" href="/admin/gift">
               <span class="menu-icon">
                 <i class="fa fa-gift"></i>
               </span>
               <span class="menu-title">Gift</span>
             </a>
-          </li>
-          <li class="nav-item menu-items">
+          </li> -->
+          <!-- <li class="nav-item menu-items">
             <a class="nav-link" href="/admin/bank">
               <span class="menu-icon">
                 <i class="fa fa-money"></i>
               </span>
               <span class="menu-title">Bank</span>
             </a>
-          </li>
-          <li class="nav-item menu-items">
+          </li> -->
+          
+          <!-- <li class="nav-item menu-items">
             <a class="nav-link" href="/admin/transaction">
               <span class="menu-icon">
                 <i class="fa fa-money"></i>
               </span>
               <span class="menu-title">Transactions</span>
             </a>
-          </li>
+          </li> -->
+
           <li class="nav-item menu-items">
+            <a
+              class="nav-link"
+              data-bs-toggle="collapse"
+              href="#transction-menu"
+              aria-expanded="false"
+              aria-controls="ui-basic"
+            >
+              <span class="menu-icon">
+                <i class="fa fa-money"></i>
+              </span>
+              <span class="menu-title">Transactions</span>
+            </a>
+            <div class="collapse" id="transction-menu">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item">
+                  <a class="nav-link" href="/admin/voucher">Voucher</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/admin/gift">Gift</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/admin/bank">Bank</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/admin/withdraw">Withdraw request</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/admin/transaction">All Transaction</a>
+                </li>
+                <!-- <li class="nav-item"> <a class="nav-link" href="adminv2/request">request</a></li> -->
+              </ul>
+            </div>
+          </li>
+          <!-- <li class="nav-item menu-items">
             <a class="nav-link" href="/admin/withdraw">
               <span class="menu-icon">
                 <i class="fa fa-money"></i>
               </span>
               <span class="menu-title">Withdraw</span>
             </a>
-          </li>
+          </li> -->
           <li class="nav-item menu-items">
             <a
               class="nav-link"

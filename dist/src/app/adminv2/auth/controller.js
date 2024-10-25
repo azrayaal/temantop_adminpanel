@@ -20,7 +20,6 @@ const actionSignin = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     try {
         const { username, password } = req.body;
         const [result] = yield db_1.default.execute("SELECT * FROM admin WHERE username = ?", [username]);
-        console.log(result);
         const rows = result;
         if (rows.length > 0) {
             const admin = rows[0];

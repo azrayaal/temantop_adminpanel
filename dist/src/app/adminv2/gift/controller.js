@@ -103,6 +103,9 @@ const indexEdit = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Ambil ID dari parameter request
         const { id } = req.params;
+        const alertMessage = req.flash("alertMessage");
+        const alertStatus = req.flash("alertStatus");
+        const alert = { message: alertMessage, status: alertStatus };
         // Ambil data dari tabel gift
         const [rows] = yield db_1.default.query("SELECT * FROM gift WHERE id = ?", [
             id,
@@ -117,6 +120,7 @@ const indexEdit = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         // Render halaman dengan data gift
         res.render("adminv2/pages/gift/edit", {
             gift,
+            alert,
             name: (_a = req.session.user) === null || _a === void 0 ? void 0 : _a.name,
             email: (_b = req.session.user) === null || _b === void 0 ? void 0 : _b.email,
             title: "Halaman Edit gift",
@@ -130,23 +134,53 @@ const indexEdit = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.indexEdit = indexEdit;
-// Handler untuk menangani pembaruan data agen
 const actionEdit = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const { id } = req.params;
-        const { img, giftName, giftLink, price } = req.body;
-        const [result] = yield db_1.default.query("UPDATE gift SET img = ?, giftName = ?, giftLink = ?, price = ? WHERE id = ?", [img, giftName, giftLink, price, id]);
-        if (result.affectedRows === 0) {
-            req.flash("alertMessage", "gift not found");
+        const { giftName, giftLink, price } = req.body;
+        const img = ((_a = res.req.file) === null || _a === void 0 ? void 0 : _a.filename) || ""; // Use Cloudinary URL if file was uploaded
+        // Fetch the existing gift data
+        const [existingGift] = yield db_1.default.query("SELECT * FROM gift WHERE id = ?", [id]);
+        if (existingGift.length === 0) {
+            req.flash("alertMessage", "Gift not found");
             req.flash("alertStatus", "danger");
             return res.redirect("/admin/gift");
         }
-        req.flash("alertMessage", "Berhasil mengedit gift");
+        const gift = existingGift[0];
+        // Check for gift name duplication
+        if (giftName && giftName !== gift.giftName) {
+            const [duplicateGift] = yield db_1.default.query("SELECT * FROM gift WHERE giftName = ? AND id != ?", [giftName, id]);
+            if (duplicateGift.length > 0) {
+                req.flash("alertMessage", "Gift with this name already exists");
+                req.flash("alertStatus", "danger");
+                return res.redirect(`/admin/gift/edit/${id}`);
+            }
+        }
+        // Prepare fields to update
+        const updates = {};
+        if (img)
+            updates.img = img; // Update image only if there's a new one
+        if (giftName && giftName !== gift.giftName)
+            updates.giftName = giftName;
+        if (giftLink && giftLink !== gift.giftLink)
+            updates.giftLink = giftLink;
+        if (price && price !== gift.price)
+            updates.price = price;
+        // Update the fields if there are changes
+        if (Object.keys(updates).length > 0) {
+            const fields = Object.keys(updates);
+            const values = Object.values(updates);
+            const setClause = fields.map((field) => `${field} = ?`).join(", ");
+            // Update the database
+            yield db_1.default.query(`UPDATE gift SET ${setClause} WHERE id = ?`, [...values, id]);
+        }
+        req.flash("alertMessage", "Successfully updated the gift");
         req.flash("alertStatus", "success");
         res.redirect("/admin/gift");
     }
     catch (err) {
-        req.flash("alertMessage", `${err.message}`);
+        req.flash("alertMessage", `Error: ${err.message}`);
         req.flash("alertStatus", "danger");
         res.redirect("/admin/gift");
     }

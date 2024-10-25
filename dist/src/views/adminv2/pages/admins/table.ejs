@@ -33,12 +33,12 @@
               <thead>
                 <tr>
                   <th>No</th>
-                  <th>Profile Picture</th>
+                  <!-- <th>Profile Picture</th> -->
                   <th onclick="sortTable(2)">Username &#x25B2;&#x25BC;</th>
                   <!-- Sort pada kolom username -->
                   <th>Email</th>
                   <th onclick="sortTableByStatus()">Status &#x25B2;&#x25BC;</th>
-                  <th>Super admin</th>
+                  <!-- <th>Super admin</th> -->
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -46,7 +46,7 @@
                 <% for(let i = 0; i < admin.length; i++){ %>
                 <tr>
                   <td><%= i + 1 %></td>
-                  <td>
+                  <!-- <td>
                     <% if (admin[i].profilePicture &&
                     admin[i].profilePicture.startsWith('http')) { %>
                     <img
@@ -63,7 +63,7 @@
                       style="width: 100px; height: 100px; border-radius: 100%"
                     />
                     <% } %>
-                  </td>
+                  </td> -->
                   <td><%= admin[i].username %></td>
                   <!-- Kolom username untuk pencarian -->
                   <td><%= admin[i].email %></td>
@@ -108,7 +108,7 @@
                       </button>
                     </form>
                   </td>
-                  <td>
+                  <!-- <td>
                     <form
                       action="/admins/superadmin/<%= admin[i].id %>"
                       method="POST"
@@ -148,7 +148,7 @@
                         <% } %>
                       </button>
                     </form>
-                  </td>
+                  </td> -->
                   <td>
                     <form
                       action="/admins/delete/<%= admin[i].id %>?_method=DELETE"

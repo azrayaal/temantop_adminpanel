@@ -30,7 +30,7 @@ const fileFilter = (req, file, cb) => {
 const upload = (0, multer_1.default)({
     storage: storage,
     limits: {
-        fileSize: 1024 * 1024 * 5, // Set file size limit to 5MB
+        fileSize: 1024 * 1024 * 5, // Set file size limit to 5MB (5 * 1024 * 1024 bytes)
     },
     fileFilter: fileFilter,
 });
@@ -39,23 +39,20 @@ const uploadSingle = (fieldName) => {
     return (req, res, next) => {
         const singleUpload = upload.single(fieldName);
         singleUpload(req, res, (err) => {
-            var _a;
             if (err instanceof multer_1.default.MulterError) {
-                // Handle Multer errors
+                // Handle Multer errors (e.g., file size exceeded)
                 return res.status(400).json({ message: err.message });
             }
             else if (err) {
-                // Handle other errors
+                // Handle other errors (e.g., wrong file type)
                 return res.status(400).json({ message: err.message });
             }
-            // Simpan hanya nama file tanpa path
-            const filename = (_a = req.file) === null || _a === void 0 ? void 0 : _a.filename;
             next();
         });
     };
 };
 exports.uploadSingle = uploadSingle;
-// Middleware for uploading multiple files
+// Middleware for uploading multiple files with specified limits
 const uploadMultiple = (fields) => {
     return (req, res, next) => {
         const uploadFields = Object.keys(fields).map((field) => ({
@@ -65,19 +62,13 @@ const uploadMultiple = (fields) => {
         const uploadMultiples = upload.fields(uploadFields);
         uploadMultiples(req, res, (err) => {
             if (err instanceof multer_1.default.MulterError) {
-                // Handle Multer errors
+                // Handle Multer errors (e.g., file size exceeded)
                 return res.status(400).json({ message: err.message });
             }
             else if (err) {
-                // Handle other errors
+                // Handle other errors (e.g., wrong file type)
                 return res.status(400).json({ message: err.message });
             }
-            // Optionally, you can access filenames here if needed
-            const filenames = Object.keys(req.files || {}).reduce((acc, field) => {
-                acc[field] = req.files[field].map((file) => file.filename);
-                return acc;
-            }, {});
-            console.log("Uploaded files:", filenames);
             next();
         });
     };

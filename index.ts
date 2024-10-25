@@ -20,6 +20,29 @@ import authv2Routes from "./src/app/adminv2/auth/router";
 import bankRoutes from "./src/app/adminv2/bank/router";
 import withdrawRoutes from "./src/app/adminv2/withdraw/router";
 
+//api v2
+import merchantRouter from "./src/api/merchant/router";
+import tokenouter from "./src/api/token/router";
+import giftRouter from "./src/api/gift/router";
+import gameRouter from "./src/api/games/game/router";
+import genreRouter from "./src/api/games/genre/router";
+import userAuth from "./src/api/profile/auth/router";
+import profileRouter from "./src/api/profile/detail/router";
+import streamSessionRouter from "./src/api/live/streamSession/router";
+import streamResultRouter from "./src/api/live/streamResults/router";
+import viewStreamRouter from "./src/api/live/viewStream/router";
+import notificationRouter from "./src/api/notifications/router";
+import searchRouter from "./src/api/search/router";
+import activityRouter from "./src/api/activity/router";
+import giftTransactionRouter from "./src/api/transaction/gift_transaction/router";
+import agentRouter from "./src/api/profile/agent/router";
+import launchRouter from "./src/api/launch/router";
+import voucherRouter from "./src/api/voucher/router";
+import adminrouter from "./src/api/admin/router";
+import withdrawRouter from "./src/api/withdraw/router";
+import bankRouter from "./src/api/bank/router";
+
+
 dotenv.config();
 
 const port = process.env.PORT || 3307;
@@ -45,7 +68,7 @@ app.use(
   session({
     secret: "keyboard cat",
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true,
     cookie: {
       httpOnly: true,
       sameSite: "lax", // Set to 'lax' or 'strict' for local development
@@ -54,6 +77,7 @@ app.use(
     },
   })
 );
+
 
 declare module "express-session" {
   interface SessionData {
@@ -97,6 +121,28 @@ app.use("/admin/auth", authv2Routes);
 app.use("/admins", adminv2Routes);
 app.use("/admin/bank", bankRoutes);
 app.use("/admin/withdraw", withdrawRoutes);
+
+// Route for the api
+app.use(`${URL}/token`, tokenouter);
+app.use(`${URL}/gift`, giftRouter);
+app.use(`${URL}/merchant`, merchantRouter);
+app.use(`${URL}/game`, gameRouter);
+app.use(`${URL}/genre`, genreRouter);
+app.use(`${URL}/auth`, userAuth);
+app.use(`${URL}/stream_session`, streamSessionRouter);
+app.use(`${URL}/view_stream`, viewStreamRouter);
+app.use(`${URL}/stream_result`, streamResultRouter);
+app.use(`${URL}/notifications`, notificationRouter);
+app.use(`${URL}/profile`, profileRouter);
+app.use(`${URL}/search`, searchRouter);
+app.use(`${URL}/activity`, activityRouter);
+app.use(`${URL}/gift_transaction`, giftTransactionRouter);
+app.use(`${URL}/agent`, agentRouter);
+app.use(`${URL}/launch`, launchRouter);
+app.use(`${URL}/redeem`, voucherRouter);
+app.use(`${URL}/admin`, adminrouter);
+app.use(`${URL}/withdraw`, withdrawRouter);
+app.use(`${URL}/bank`, bankRouter);
 
 // Start the server
 server.listen(port, () => {
