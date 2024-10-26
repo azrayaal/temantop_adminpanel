@@ -39,25 +39,17 @@
                 </tr>
               </thead>
               <tbody>
-                <% for(let i = 0; i < voucher.length; i++){ %>
+                <% voucher.forEach((v, index) => { %>
                 <tr>
-                  <td><%= i + 1 %></td>
-                  <td><%= voucher[i].name %></td>
-                  <td><%= voucher[i].unique_code %></td>
+                  <td><%= (currentPage - 1) * 15 + index + 1 %></td>
+                  <td><%= v.name %></td>
+                  <td><%= v.unique_code %></td>
+                  <td><%= v.is_used === 1 ? "Yes" : "No" %></td>
+                  <td><%= v.formattedPrice %></td>
                   <td>
-                    <%= voucher[i].is_used === 1 ? "Yes" : "No" %> 
-                  </td>
-                  <td><%= voucher[i].formattedPrice %></td>
-                  <td>
-                    <% if (voucher[i].is_used === 0) { %> <!-- Hanya tampilkan jika belum digunakan -->
-                      <form
-                        action="/admin/voucher/delete/<%= voucher[i].id %>?_method=DELETE"
-                        method="POST"
-                      >
-                        <a
-                          href="/admin/voucher/edit/<%= voucher[i].id %>"
-                          class="btn btn-warning"
-                        >
+                    <% if (v.is_used === 0) { %>
+                      <form action="/admin/voucher/delete/<%= v.id %>?_method=DELETE" method="POST">
+                        <a href="/admin/voucher/edit/<%= v.id %>" class="btn btn-warning">
                           <i class="fas fa-pencil-alt"></i> Edit
                         </a>
                         <button type="submit" class="btn btn-danger">
@@ -65,15 +57,26 @@
                         </button>
                       </form>
                     <% } else { %>
-                      <!-- Menampilkan teks bahwa voucher sudah digunakan -->
                       <span class="text-muted">Used voucher cannot be edited or deleted</span>
                     <% } %>
                   </td>
                 </tr>
-                <% } %>
+                <% }) %>
               </tbody>
             </table>
           </div>
+          
+          <!-- Pagination Controls -->
+          <nav aria-label="Page navigation" style="padding-top: 20px">
+            <ul class="pagination justify-content-center">
+              <% for (let i = 1; i <= totalPages; i++) { %>
+                <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                  <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+                </li>
+              <% } %>
+            </ul>
+          </nav>
+          
         </div>
       </div>
     </div>

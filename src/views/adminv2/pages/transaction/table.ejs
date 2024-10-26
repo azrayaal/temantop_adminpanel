@@ -18,7 +18,7 @@
       <div class="card">
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4 class="card-title mb-0">Table transaction</h4>
+            <h4 class="card-title mb-0">Table Transaction</h4>
             <div class="d-flex justify-content-end">
               <input
                 type="date"
@@ -35,42 +35,12 @@
               <button class="btn btn-primary shadow" onclick="filterByDate()">
                 Filter
               </button>
+              <button id="exportButton" class="btn btn-success ms-4">
+                Export
+              </button>
             </div>
           </div>
-
-          <!-- Total income yang akan di-update dengan JavaScript -->
-          <div class="container mt-5 mb-5">
-            <div class="row">
-              <div class="col-md-4">
-                <div
-                  class="card-header shadow rounded d-flex flex-row align-items-center justify-content-between p-3"
-                >
-                  <div
-                    class="bg-success rounded-circle d-flex align-items-center justify-content-center"
-                    style="width: 50px; height: 50px"
-                  >
-                    <img
-                      src="https://img.icons8.com/material-outlined/48/ffffff/wallet.png"
-                      alt="wallet icon"
-                      class="img-fluid"
-                    />
-                  </div>
-                  <div class="text-end">
-                    <p class="mb-0 text-muted">Total Income</p>
-                    <h5 class="mb-0" id="totalIncome">
-                      <%= parseFloat(totalAmount).toFixed(2) %> IDR
-                    </h5>
-                    <!-- Menampilkan total dari API -->
-                    <button id="exportButton" class="btn btn-success mt-2">
-                      Export
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- Tombol Ekspor -->
-
+    
           <div class="table-responsive">
             <table
               class="table table-bordered"
@@ -80,49 +50,49 @@
               <thead>
                 <tr>
                   <th>No</th>
-                  <!-- Kolom untuk nomor -->
-                  <th id="senderHeader" class="sortable">Sender Name</th>
-                  <th id="senderHeader" class="sortable">Sender Id</th>
-                  <th id="receiverHeader" class="sortable">Receiver Name</th>
-                  <th id="receiverHeader" class="sortable">Receiver Id</th>
-                  <th id="giftNameHeader" class="sortable">Gift Name</th>
-                  <th id="amountHeader" class="sortable">Amount</th>
-                  <th id="descriptionHeader" class="sortable">Description</th>
-                  <th id="dateHeader" class="sortable">Transaction Date</th>
+                  <th class="sortable">Transaction Type</th>
+                  <th class="sortable">Transaction Id</th>
+                  <th class="sortable">User Id</th>
+                  <th class="sortable">Username</th>
+                  <th class="sortable">Amount</th>
+                  <th class="sortable">Description</th>
+                  <th class="sortable">Transaction Date</th>
                 </tr>
               </thead>
-
               <tbody id="transactionTableBody">
-                <% for(let i = 0; i < transactions.length; i++){ %>
-                <tr>
-                  <td class="row-number"></td>
-                  <!-- Kolom nomor yang akan diisi oleh JavaScript -->
-                  <td><%= transactions[i].senderName %></td>
-                  <td><%= transactions[i].senderPlayerId %></td>
-                  <td><%= transactions[i].receiverName %></td>
-                  <td><%= transactions[i].receiverPlayerId %></td>
-                  <td><%= transactions[i].giftName %></td>
-                  <td><%= parseFloat(transactions[i].amount).toFixed(2) %></td>
-                  <td><%= transactions[i].description %></td>
-                  <td>
-                    <%= new Date(transactions[i].createdAt).toLocaleString() %>
-                  </td>
-                </tr>
-                <% } %>
+                <% transactions.forEach((transaction, index) => { %>
+                  <tr onclick="window.location.href='/admin/transaction/<%= transaction.id %>'">
+                    <td><%= index + 1 %></td>
+                    <td><%= transaction.transactionType %></td>
+                    <td><%= transaction.transactionId %></td>
+                    <td><%= transaction.player_id %></td>
+                    <td><%= transaction.userName %></td>
+                    <td><%= parseFloat(transaction.amount).toFixed(2) %></td>
+                    <td><%= transaction.description %></td>
+                    <td><%= new Date(transaction.createdAt).toLocaleString() %></td>
+                  </tr>
+                <% }) %>
               </tbody>
             </table>
-
+    
             <!-- Pagination Controls -->
             <nav aria-label="Page navigation" style="padding-top: 20px">
-              <ul
-                class="pagination justify-content-center"
-                id="pagination"
-              ></ul>
+              <ul class="pagination justify-content-center" id="pagination"></ul>
             </nav>
           </div>
         </div>
+        <nav aria-label="Page navigation" style="padding-top: 20px">
+          <ul class="pagination justify-content-center">
+            <% for (let i = 1; i <= totalPages; i++) { %>
+              <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+              </li>
+            <% } %>
+          </ul>
+        </nav>
       </div>
     </div>
+    
   </div>
 
   <footer class="footer">

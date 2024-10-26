@@ -39,7 +39,7 @@ export const redeemVoucher = async (req: Request, res: Response) => {
     );
   
     await pool.query<RowDataPacket[]>(
-      "INSERT INTO gift_transaction (receivedId, amount, description) VALUES (?, ?, ?)",
+      "INSERT INTO topup_transaction (userId, amount, description) VALUES (?, ?, ?)",
       [user?.id, voucherData.price, `Redeemed voucher ${voucherData.name}(${voucher})`]
     )
   

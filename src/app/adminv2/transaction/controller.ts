@@ -28,152 +28,194 @@ const getTotalExpensesFromUserB = async (userIdB: number): Promise<number> => {
   return rows[0]?.totalExpenses || 0;
 };
 
-// Controller untuk mendapatkan transaksi
+// Controller for fetching paginated transactions
 export const getTransactions = async (req: Request, res: Response) => {
   try {
-    const [rows] = await pool.query<RowDataPacket[]>(
-      `SELECT
-        gt.id,
-        gt.userId,
-        sender.username AS senderName,
-        sender.player_id AS senderPlayerId,
-        gt.receivedId,
-        receiver.username AS receiverName,
-        receiver.player_id AS receiverPlayerId,
-        gt.giftId,
+    // Pagination variables
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = 15;
+    const offset = (page - 1) * limit;
+
+    // Query to fetch transactions with user and gift details, ordered by latest
+    const [transactions] = await pool.query<RowDataPacket[]>(
+      `SELECT 
+        t.id AS transactionId,
+        t.userId,
+        u.username AS userName,
+        u.player_id AS player_id,
+        t.transactionType,
+        t.transactionId AS relatedTransactionId,
         gt.giftName,
         gt.amount,
         gt.description,
-        gt.createdAt
-      FROM gift_transaction gt
-      LEFT JOIN user sender ON gt.userId = sender.id
-      LEFT JOIN user receiver ON gt.receivedId = receiver.id
-      ORDER BY gt.createdAt DESC`
+        t.createdAt
+      FROM transaction t
+      LEFT JOIN user u ON t.userId = u.id
+      LEFT JOIN gift_transaction gt ON t.transactionType = 'gift_transaction' AND t.transactionId = gt.id
+      ORDER BY t.createdAt DESC
+      LIMIT ? OFFSET ?`,
+      [limit, offset]
     );
 
-    // Query untuk menghitung total dari semua transaksi
+    // Calculate the total number of transactions
     const [totalResult] = await pool.query<RowDataPacket[]>(
-      `SELECT SUM(gt.amount) AS totalAmount FROM gift_transaction gt`
+      `SELECT COUNT(*) AS totalTransactions FROM transaction`
     );
-    const totalAmount = totalResult[0]?.totalAmount || 0;
+    const totalTransactions = totalResult[0]?.totalTransactions || 0;
 
+    // Calculate the total amount from gift transactions
+    const [totalAmountResult] = await pool.query<RowDataPacket[]>(
+      `SELECT SUM(gt.amount) AS totalAmount 
+       FROM transaction t
+       LEFT JOIN gift_transaction gt ON t.transactionType = 'gift_transaction' AND t.transactionId = gt.id`
+    );
+    const totalAmount = totalAmountResult[0]?.totalAmount || 0;
+
+    // Calculate total pages
+    const totalPages = Math.ceil(totalTransactions / limit);
+
+    // Map over transactions to adjust the transactionType
+    const formattedTransactions = transactions.map((transaction) => {
+      let transactionTypeLabel;
+
+      switch (transaction.transactionType) {
+        case 'gift_transaction':
+          transactionTypeLabel = "Gift";
+          break;
+        case 'session_transaction':
+          transactionTypeLabel = "Session";
+          break;
+        case 'withdraw_transaction':
+          transactionTypeLabel = "Withdraw";
+          break;
+        case 'topup_transaction':
+          transactionTypeLabel = "Topup";
+          break;
+        default:
+          transactionTypeLabel = "Unknown";
+      }
+
+      return {
+        ...transaction,
+        transactionType: transactionTypeLabel,
+      };
+    });
+
+    // Render the transactions page with retrieved data
     res.render("adminv2/pages/transaction/index", {
-      name: req.session.user?.name,
-      email: req.session.user?.email,
+      name: req.session.user?.name || "Admin",
+      email: req.session.user?.email || "admin@example.com",
       title: "Transactions",
-      transactions: rows,
-      totalAmount: totalAmount,
+      transactions: formattedTransactions,
+      totalAmount,
+      currentPage: page,
+      totalPages,
     });
-  } catch (err: any) {
-    console.log(err);
+  } catch (error: any) {
+    console.error("Error fetching transactions:", error);
     res.status(500).send("Internal Server Error");
   }
 };
 
-// Controller untuk mendapatkan summary transaksi
-export const getTransactionSummary = async (req: Request, res: Response) => {
+export const getTransactionDetail = async (req: Request, res: Response) => {
+  const { id } = req.params;
   try {
-    const userIdA = parseInt(req.query.userIdA as string, 10); // Ambil ID user A dari query params
-    const userIdB = parseInt(req.query.userIdB as string, 10); // Ambil ID user B dari query params
+    // Fetch the basic transaction details from the main transaction table
+    const [transactionBase] = await pool.query<RowDataPacket[]>(
+      `SELECT 
+    t.id AS transactionId,
+    t.userId,
+    t.transactionId,
+    t.transactionType,
+    u.username AS userName,
+    u.player_id AS userPlayerId,
+    t.createdAt,
+    CASE 
+        WHEN t.transactionType = 'gift_transaction' THEN gt.amount
+        WHEN t.transactionType = 'session_transaction' THEN st.amount
+        WHEN t.transactionType = 'withdraw_transaction' THEN wt.amount
+        WHEN t.transactionType = 'topup_transaction' THEN tt.amount
+        ELSE NULL
+    END AS amount
+FROM transaction t
+LEFT JOIN user u ON t.userId = u.id
+LEFT JOIN gift_transaction gt ON t.transactionType = 'gift_transaction' AND t.transactionId = gt.id
+LEFT JOIN session_transaction st ON t.transactionType = 'session_transaction' AND t.transactionId = st.id
+LEFT JOIN withdraw_transaction wt ON t.transactionType = 'withdraw_transaction' AND t.transactionId = wt.id
+LEFT JOIN topup_transaction tt ON t.transactionType = 'topup_transaction' AND t.transactionId = tt.id
+WHERE t.id = ?;
+`,
+      [id]
+    );
 
-    // Menghitung total pemasukan dari User A dan total pengeluaran dari User B
-    const totalIncomeFromUserA = await getTotalIncomeFromUserA(userIdA);
-    const totalExpensesFromUserB = await getTotalExpensesFromUserB(userIdB);
+    const formatRupiah = (angka: number) => {
+      return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    };
 
-    // Render halaman dengan data
-    res.render("adminv2/pages/transaction/summary", {
-      title: "Transaction Summary",
-      totalIncomeFromUserA: totalIncomeFromUserA.toFixed(2),
-      totalExpensesFromUserB: totalExpensesFromUserB.toFixed(2),
-      userIdA,
-      userIdB,
-    });
-  } catch (err: any) {
-    console.log(err);
-    res.status(500).send("Internal Server Error");
-  }
-};
+    // if (transactionBase.length === 0) {
+    //   return res.status(404).render("adminv2/pages/transaction/notfound", {
+    //     message: "Transaction not found",
+    //   });
+    // }
 
-// Controller untuk ekspor PDF menggunakan jsPDF
+    const transaction = transactionBase[0];
+    let transactionDetail;
 
-// Controller untuk menghasilkan laporan transaksi sebagai Excel
+    // Fetch additional details based on transactionType
+    switch (transaction.transactionType) {
+      case "gift_transaction":
+        const [giftDetails] = await pool.query<RowDataPacket[]>(
+          `SELECT giftName, amount, description FROM gift_transaction WHERE id = ?`,
+          [transaction.relatedTransactionId]
+        );
+        transactionDetail = giftDetails[0];
+        break;
 
-export const exportTransactionsToExcel = async (
-  req: Request,
-  res: Response
-) => {
-  try {
-    const { startDate, endDate } = req.query; // Mendapatkan parameter tanggal
+      case "session_transaction":
+        const [sessionDetails] = await pool.query<RowDataPacket[]>(
+          `SELECT stream_sessionId, amount, description FROM session_transaction WHERE id = ?`,
+          [transaction.relatedTransactionId]
+        );
+        transactionDetail = sessionDetails[0];
+        break;
 
-    // Validasi apakah startDate dan endDate diberikan
-    if (!startDate || !endDate) {
-      return res.status(400).send("Please provide both startDate and endDate.");
+      case "withdraw_transaction":
+        const [withdrawDetails] = await pool.query<RowDataPacket[]>(
+          `SELECT amount, description FROM withdraw_transaction WHERE id = ?`,
+          [transaction.relatedTransactionId]
+        );
+        transactionDetail = withdrawDetails[0];
+        break;
+
+      case "topup_transaction":
+        const [topupDetails] = await pool.query<RowDataPacket[]>(
+          `SELECT amount, description FROM topup_transaction WHERE id = ?`,
+          [transaction.relatedTransactionId]
+        );
+        transactionDetail = topupDetails[0];
+        break;
+
+      default:
+        return res.status(400).render("adminv2/pages/transaction/error", {
+          message: "Unknown transaction type",
+        });
     }
 
-    // Query SQL untuk mendapatkan transaksi berdasarkan rentang tanggal
-    const query = `
-      SELECT
-        gt.id,
-        gt.userId,
-        sender.username AS senderName,
-        gt.receivedId,
-        receiver.username AS receiverName,
-        gt.giftId,
-        gt.giftName,
-        gt.amount,
-        gt.createdAt
-      FROM gift_transaction gt
-      LEFT JOIN user sender ON gt.userId = sender.id
-      LEFT JOIN user receiver ON gt.receivedId = receiver.id
-      WHERE DATE(gt.createdAt) BETWEEN ? AND ?
-      ORDER BY gt.createdAt DESC
-    `;
-
-    // Menjalankan query dengan parameter tanggal yang diterima
-    const [rows] = await pool.query<RowDataPacket[]>(query, [
-      startDate,
-      endDate,
-    ]);
-
-    // Konversi data transaksi ke dalam format array untuk dimasukkan ke Excel
-    const data = rows.map((transaction) => ({
-      ID: transaction.id,
-      Sender: transaction.senderName,
-      Receiver: transaction.receiverName,
-      GiftName: transaction.giftName,
-      Amount: transaction.amount,
-      // Memformat createdAt ke dalam format tanggal Indonesia
-      Date: new Date(transaction.createdAt).toLocaleDateString("id-ID", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      }), // Misalnya "12 September 2024"
-    }));
-
-    // Membuat worksheet Excel dari data transaksi
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
-
-    // Menghasilkan buffer Excel
-    const excelBuffer = XLSX.write(workbook, {
-      type: "buffer",
-      bookType: "xlsx",
+    // Render the details page with combined data
+    res.render("adminv2/pages/transaction/detail", {
+      name: req.session.user?.name || "Admin",
+      email: req.session.user?.email || "admin@example.com",
+      title: "Transaction Details",
+      transaction: {
+        ...transaction,
+        ...transactionDetail,
+        amount: formatRupiah(transaction.amount),
+      },
     });
-
-    // Mengirimkan file Excel sebagai respons
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    );
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename=transactions_report_${startDate}_to_${endDate}.xlsx`
-    );
-
-    res.send(excelBuffer); // Mengirimkan file Excel ke klien
-  } catch (err: any) {
-    console.log("Error occurred during Excel generation:", err);
-    res.status(500).send("Internal Server Error");
+  } catch (error: any) {
+    console.error("Error fetching transaction detail:", error);
+    res.status(500).render("adminv2/pages/transaction/error", {
+      message: "Internal Server Error",
+    });
   }
 };

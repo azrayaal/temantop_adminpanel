@@ -22,41 +22,46 @@ interface voucher extends RowDataPacket {
 
 export const index = async (req: Request, res: Response) => {
   try {
-    // Fungsi untuk memformat angka menjadi format Rupiah
-    const formatRupiah = (angka: number) => {
-      return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    };
+    const formatRupiah = (angka: number) => 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
-    // Ambil data dari tabel voucher
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = 15;
+    const offset = (page - 1) * limit;
+
     const alertMessage = req.flash("alertMessage");
     const alertStatus = req.flash("alertStatus");
-
     const alert = { message: alertMessage, status: alertStatus };
-    const [voucher] = await pool.query<voucher[]>("SELECT * FROM voucher");
 
-    // Format harga setiap voucher sebelum dikirim ke EJS
-    const formattedVouchers = voucher.map((v: any) => {
-      return {
-        ...v,
-        formattedPrice: formatRupiah(v.price), // Tambahkan harga yang diformat
-      };
-    });
+    const [voucher] = await pool.query<voucher[]>(
+      `SELECT * FROM voucher ORDER BY createdAt DESC LIMIT ? OFFSET ?`,
+      [limit, offset]
+    );
 
-    // Render halaman dengan data voucher yang sudah diformat
+    const formattedVouchers = voucher.map((v: any) => ({
+      ...v,
+      formattedPrice: formatRupiah(v.price),
+    }));
+
+    const [totalResult] = await pool.query<RowDataPacket[]>(`SELECT COUNT(*) AS totalVouchers FROM voucher`);
+    const totalVouchers = totalResult[0]?.totalVouchers || 0;
+    const totalPages = Math.ceil(totalVouchers / limit);
+
     res.render("adminv2/pages/voucher/index", {
       voucher: formattedVouchers,
       alert,
       name: req.session.user?.name,
       email: req.session.user?.email,
       title: "Halaman voucher",
+      currentPage: page,
+      totalPages,
     });
   } catch (err: any) {
-    // Jika terjadi kesalahan, redirect ke halaman voucher
     req.flash("alertMessage", `${err.message}`);
     req.flash("alertStatus", "danger");
     res.redirect("/admin/voucher");
   }
 };
+
 
 
 export const indexCreate = async (req: Request, res: Response) => {

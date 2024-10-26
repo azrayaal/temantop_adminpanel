@@ -20,7 +20,7 @@ export const index = async (req: Request, res: Response) => {
       "SELECT COUNT(*) AS count FROM bank"
     );
     const [transactionRows] = await pool.query<RowDataPacket[]>(
-      "SELECT COUNT(*) AS count FROM gift_transaction"
+      "SELECT COUNT(*) AS count FROM transaction"
     );
 
     res.render("adminv2/index", {
