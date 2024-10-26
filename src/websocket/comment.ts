@@ -1,6 +1,6 @@
 import { Server as SocketIOServer } from "socket.io";
 import pool from "../../db";
-import { RowDataPacket } from "mysql2";
+import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { fetchBalance } from "../apiv2/testAccountBalance/controller";
 
 export default function setupWebSocket(io: SocketIOServer) {
@@ -49,7 +49,7 @@ export default function setupWebSocket(io: SocketIOServer) {
       io.to(channelName).emit(
         "joinViewCount",
         // formatViewCount(actualViewCount)
-        formatViewCount(totalViewCount)
+        formatViewCount(totalViewCount - 1)
       );
 
       // Emit a message to everyone in the room that the user has joined
@@ -156,7 +156,7 @@ export default function setupWebSocket(io: SocketIOServer) {
         ]);
 
         // Log the transaction
-        await pool.query(
+        const [giftResult]: [ResultSetHeader, any] =await pool.query(
           "INSERT INTO gift_transaction (userId, receivedId, giftId, giftName, amount, description) VALUES (?, ?, ?, ?, ?, ?)",
           [
             userId,
@@ -168,6 +168,14 @@ export default function setupWebSocket(io: SocketIOServer) {
           ]
         );
 
+        const giftTransactionId = giftResult.insertId;
+
+        await pool.query( "INSERT INTO transaction (userId, transactionType, transactionId) VALUES (?, ?, ?)", [
+          userId,
+          'gift_transaction',
+          giftTransactionId,
+        ]);
+        
         // Broadcast the gift details to all clients in the room
         io.to(channelName).emit("gift received", {
           giftDetails: giftDetails,
@@ -256,32 +264,55 @@ export default function setupWebSocket(io: SocketIOServer) {
       });
     });
 
-    // socket.on("disconnect", () => {
-    //   console.log("A user disconnected");
+///////////////////////////////////////// NOTIF ////////////////////////////////////
+// Fungsi untuk memeriksa notifikasi yang belum dibaca dan mengirim notifikasi
+async function checkUnreadNotifications(userId: number) {
+  try {
+    // Ambil notifikasi yang belum dibaca (is_read = 0) dari tabel
+    const [notifications] = await pool.query<ResultSetHeader[]>(
+      "SELECT * FROM notifications WHERE userId = ? AND is_read = 0",
+      [userId]
+    );
 
-    //   // Get the userId and channelName from the socket
-    //   const userId = (socket as any).userId;
-    //   const channelName = (socket as any).channelName;
+    // Jika ada notifikasi yang belum dibaca, kirim notifikasi melalui socket
+    if (notifications.length > 0 && activeSockets[userId]) {
+      const socketId = activeSockets[userId];
+      io.to(socketId).emit("newNotification", {
+        message: `You have ${notifications.length} unread notifications.`,
+        notifications: notifications,
+      });
+      console.log(`Notification sent to userId: ${userId}`);
+    } else {
+      console.log(`No unread notifications found for userId: ${userId}`);
+    }
+  } catch (error) {
+    console.error("Error checking unread notifications:", error);
+  }
+}
 
-    //   if (channelName && userId && channelViewCount[channelName]) {
-    //     // Remove the userId from the room's viewer set
-    //     if (channelViewCount[channelName].has(userId)) {
-    //       channelViewCount[channelName].delete(userId);
+// Saat pengguna mengirimkan permintaan untuk mulai menerima pembaruan
+socket.on("startNotificationUpdates", async (userId) => {
+  console.log(`Starting notification updates for userId: ${userId}`);
+  
+  // Cek jika userId sudah memiliki koneksi aktif
+  if (activeSockets[userId]) {
+    const oldSocketId = activeSockets[userId];
+    const oldSocket = io.sockets.sockets.get(oldSocketId);
 
-    //       const newViewersCount = channelViewCount[channelName].size; // Get updated viewer count
+    // Jika socket lama ada, putuskan koneksi
+    if (oldSocket) {
+      console.log(`Disconnecting previous socket for userId: ${userId}`);
+      oldSocket.disconnect(true);
+    }
+  }
 
-    //       // Emit the updated viewer count to the room
-    //       io.to(channelName).emit(
-    //         "joinViewCount",
-    //         formatViewCount(newViewersCount)
-    //       );
+  // Simpan socket.id yang baru untuk userId
+  activeSockets[userId] = socket.id;
 
-    //       console.log(
-    //         `Updated view count for room ${channelName}: ${newViewersCount}`
-    //       );
-    //     }
-    //   }
-    // });
+  // Periksa notifikasi yang belum dibaca untuk pengguna ini
+  await checkUnreadNotifications(userId);
+});
+//////////////////////////////////////////////////////////////////
 
     socket.on("disconnect", () => {
       console.log("A user disconnected");
@@ -296,7 +327,7 @@ export default function setupWebSocket(io: SocketIOServer) {
 
           const totalViewCount = channelViewCount[channelName].size;
           const actualViewCount = (socket as any).isOwner
-            ? totalViewCount - 1
+            ? totalViewCount
             : totalViewCount;
 
           // Emit the updated viewer count to the room

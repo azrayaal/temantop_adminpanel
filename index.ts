@@ -20,7 +20,7 @@ import authv2Routes from "./src/app/adminv2/auth/router";
 import bankRoutes from "./src/app/adminv2/bank/router";
 import withdrawRoutes from "./src/app/adminv2/withdraw/router";
 
-//api v2
+//api v1
 import merchantRouter from "./src/api/merchant/router";
 import tokenouter from "./src/api/token/router";
 import giftRouter from "./src/api/gift/router";
@@ -35,6 +35,8 @@ import notificationRouter from "./src/api/notifications/router";
 import searchRouter from "./src/api/search/router";
 import activityRouter from "./src/api/activity/router";
 import giftTransactionRouter from "./src/api/transaction/gift_transaction/router";
+import transactionRouter from "./src/api/transaction/router";
+import sessionTransctionRouter from "./src/api/transaction/session_transation/router";
 import agentRouter from "./src/api/profile/agent/router";
 import launchRouter from "./src/api/launch/router";
 import voucherRouter from "./src/api/voucher/router";
@@ -66,18 +68,12 @@ app.use(methodOverride("_method"));
 // Middleware
 app.use(
   session({
-    secret: "keyboard cat",
+    secret: 'keyboard cat',
     resave: false,
     saveUninitialized: true,
-    cookie: {
-      httpOnly: true,
-      sameSite: "lax", // Set to 'lax' or 'strict' for local development
-      // secure: true, // Uncomment only when using HTTPS
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
-    },
+    cookie: {maxAge: 24 * 60 * 60 * 1000},
   })
 );
-
 
 declare module "express-session" {
   interface SessionData {
@@ -93,14 +89,7 @@ declare module "express-session" {
 }
 
 app.use(flash());
-
-app.use(
-  cors({
-    origin: "*", // Allow all origins
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow necessary HTTP methods
-    allowedHeaders: ["Content-Type", "Authorization"], // Add other headers if needed
-  })
-);
+app.use(cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -137,6 +126,8 @@ app.use(`${URL}/profile`, profileRouter);
 app.use(`${URL}/search`, searchRouter);
 app.use(`${URL}/activity`, activityRouter);
 app.use(`${URL}/gift_transaction`, giftTransactionRouter);
+app.use(`${URL}/transaction`, transactionRouter);
+app.use(`${URL}/session_transaction`, sessionTransctionRouter);
 app.use(`${URL}/agent`, agentRouter);
 app.use(`${URL}/launch`, launchRouter);
 app.use(`${URL}/redeem`, voucherRouter);
