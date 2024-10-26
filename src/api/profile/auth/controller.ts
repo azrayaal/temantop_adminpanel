@@ -7,6 +7,7 @@ import { FieldPacket, ResultSetHeader, RowDataPacket } from "mysql2";
 require("dotenv").config();
 import axios from "axios";
 import https from "https";
+import { randomString } from "../../../app/adminv2/agent/controller";
 
 // import { OAuth2Client } from "google-auth-library";
 const JWT_SECRET: string | undefined = process.env.JWT_SECRET;
@@ -86,6 +87,24 @@ export const register = async (req: Request, res: Response) => {
       });
     }
 
+    // add player_id
+      // Generate a unique player_id
+      let player_id = randomString(8);
+
+      while (true) {
+        const [checkPlayerId]: any = await pool.query(
+          "SELECT * FROM user WHERE player_id = ?",
+          [player_id]
+        );
+  
+        if (checkPlayerId.length === 0) {
+          break; // Player ID is unique
+        }
+        
+        // Generate a new player_id if it already exists
+        player_id = randomString(8);
+      }  
+
     // Check if the username  already exists
     const [existingUsername]: any = await pool.query(
       "SELECT * FROM user WHERE username = ? ",
@@ -105,8 +124,8 @@ export const register = async (req: Request, res: Response) => {
 
     // Insert the new user into the database
     await pool.query<ResultSetHeader>(
-      "INSERT INTO user (email, username, profilePicture, password, channelName) VALUES (?, ?, ?, ?, ?)",
-      [email, username, profilePicture, bcryptedPassword, username]
+      "INSERT INTO user (email, username, profilePicture, password, channelName, player_id) VALUES (?, ?, ?, ?, ?, ?)",
+      [email, username, profilePicture, bcryptedPassword, username, player_id]
     );
 
     res.json({
@@ -173,10 +192,27 @@ export const registerAgent = async (req: Request, res: Response) => {
     const stream = 1;
     const channelName = username;
 
+      // Generate a unique player_id
+      let player_id = randomString(8);
+      while (true) {
+        const [checkPlayerId]: any = await pool.query(
+          "SELECT * FROM user WHERE player_id = ?",
+          [player_id]
+        );
+  
+        if (checkPlayerId.length === 0) {
+          break; // Player ID is unique
+        }
+        
+        // Generate a new player_id if it already exists
+        player_id = randomString(8);
+      }
+  
+
     // Insert the new user into the database
     await pool.query<ResultSetHeader>(
-      "INSERT INTO user (email, username, profilePicture, password, stream, channelName) VALUES (?, ?, ?, ?, ?, ?)",
-      [email, username, profilePicture, bcryptedPassword, stream, channelName]
+      "INSERT INTO user (email, username, profilePicture, password, stream, channelName, player_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      [email, username, profilePicture, bcryptedPassword, stream, channelName, player_id]
     );
 
     res.json({
