@@ -17,7 +17,7 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const db_1 = __importDefault(require("../../db"));
 const JWT_SECRET = "your_secret_key_here";
 const isLoginAdmin = (req, res, next) => {
-    if (!req.session.user) {
+    if (!req.session.admin) {
         req.flash("alertMessage", "Sorry you are not authorized to access this page");
         req.flash("alertStatus", "danger");
         return res.redirect("/admin/auth");

@@ -26,7 +26,7 @@ const actionSignin = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             if (admin.status === 1) {
                 const checkPassword = yield bcryptjs_1.default.compare(password, admin.password);
                 if (checkPassword) {
-                    req.session.user = {
+                    req.session.admin = {
                         id: admin.id,
                         username: admin.username,
                         picture: admin.picture,
