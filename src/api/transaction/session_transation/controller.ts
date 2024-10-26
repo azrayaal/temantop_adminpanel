@@ -54,6 +54,7 @@ export const getSessionTransactions = async (req: Request, res: Response) => {
     });
   }
 };
+
 export const createSessionTransaction = async (req: Request, res: Response) => {
   try {
     const { amount, stream_sessionId } = req.body;
@@ -102,13 +103,14 @@ export const createSessionTransaction = async (req: Request, res: Response) => {
 
     // Jika saldo mencukupi, buat transaksi baru di tabel session_transaction
     const [result]: [ResultSetHeader, any] = await pool.query(
-      "INSERT INTO session_transaction (userId, amount, stream_sessionId, paid, description) VALUES (?, ?, ?, ?)",
+      "INSERT INTO session_transaction (userId, amount, stream_sessionId, paid, description) VALUES (?, ?, ?, ?, ?)",
       [userId, amount, stream_sessionId, 1, "Paid for stream session"]
     );
     
-    // update table transaction
+    // Ambil `insertId` dari transaksi yang baru saja dibuat
     const resultId = result.insertId;
 
+    // Masukkan ke dalam tabel `transaction`
     await pool.query(
       "INSERT INTO transaction (userId, transactionType, transactionId) VALUES (?, ?, ?)",
       [userId, "session_transaction", resultId]
