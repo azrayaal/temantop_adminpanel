@@ -9,7 +9,7 @@ interface CustomSession extends session.Session {
   admin?: { id: number; email: string; status: string; name: string };
 }
 
-const JWT_SECRET = "your_secret_key_here";
+const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key_here";
 
 export const isLoginAdmin = (
   req: Request & { session: CustomSession },
@@ -60,8 +60,8 @@ export const isLoginUser = async (
 
     jwt.verify(token, JWT_SECRET, async (err, decoded: any) => {
       if (err) {
+        console.log("JWT verification error:", err); // Tambahkan ini untuk melihat error
         if (err.name === "TokenExpiredError") {
-          // Jika token expired, logout user secara otomatis
           await pool.query(
             "UPDATE user SET online = 0, jwt_token = NULL, is_logged_in = false WHERE id = ?",
             [decoded.userId]
@@ -75,10 +75,10 @@ export const isLoginUser = async (
             .json({ message: "Unauthorized: Invalid token" });
         }
       }
-
-      req.user = decoded.userData; // Assign token data ke request
+      req.user = decoded.userData;
       next();
     });
+    
   } catch (error) {
     res.status(500).json({ message: "Error processing authentication", error });
   }
