@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const controller_1 = require("./controller");
+const auth_1 = require("../../middleware/auth");
+const uploadImage_1 = require("../../middleware/uploadImage");
+const router = (0, express_1.Router)();
+router.get("/", auth_1.isLoginUser, controller_1.getAllMerchant);
+router.get("/:id", controller_1.getDetailmerchant);
+router.post("/", (0, uploadImage_1.uploadSingle)("merchantLogo"), controller_1.postmerchant);
+router.put("/edit/:id", (0, uploadImage_1.uploadSingle)("merchantLogo"), controller_1.editmerchant);
+router.delete("/delete/:id", controller_1.deletemerchant);
+exports.default = router;

@@ -7,6 +7,7 @@ import cors from "cors";
 import methodOverride from "method-override";
 import flash from "connect-flash";
 import http from "http"; // Import the HTTP module
+import { Server as SocketIOServer } from "socket.io"; // Import Socket.IO
 
 // admin viewV2
 import adminv2Routes from "./src/app/adminv2/admins/router";
@@ -44,6 +45,10 @@ import adminrouter from "./src/api/admin/router";
 import withdrawRouter from "./src/api/withdraw/router";
 import bankRouter from "./src/api/bank/router";
 
+import setupWebSocket from "./src/websocket/comment";
+
+// apijoyo
+import apiV2Routes from "./src/apiv2/token/router";
 
 dotenv.config();
 
@@ -54,6 +59,16 @@ const URL = `/api/v1`;
 // Create an HTTP server
 const server = http.createServer(app);
 
+const io = new SocketIOServer(server, {
+  cors: {
+    origin: "*", // Allow all origins for testing
+    methods: ["GET", "POST"],
+  },
+});
+
+// Initialize WebSocket server
+setupWebSocket(io);
+
 // view engine setup
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "src/views"));
@@ -61,7 +76,6 @@ app.set("views", path.join(__dirname, "src/views"));
 // Serve static files from the public directory
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/uploads", express.static("public/uploads"));
-app.use("/adminlte", express.static(path.join(__dirname, "public/adminlte")));
 app.use("/corona", express.static(path.join(__dirname, "public/corona")));
 app.use(methodOverride("_method"));
 
@@ -70,7 +84,7 @@ app.use(
   session({
     secret: 'keyboard cat',
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: {maxAge: 24 * 60 * 60 * 1000},
   })
 );
@@ -89,7 +103,14 @@ declare module "express-session" {
 }
 
 app.use(flash());
-app.use(cors());
+
+app.use(
+  cors({
+    origin: "*", // Allow all origins
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow necessary HTTP methods
+    allowedHeaders: ["Content-Type", "Authorization"], // Add other headers if needed
+  })
+);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -98,6 +119,8 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/", (req: Request, res: Response) => {
   res.redirect("/admin/dashboard");
 });
+
+app.use("/", apiV2Routes);
 
 // Route for the admin view
 app.use("/admin/dashboard", dashboardv2Routes);

@@ -1,0 +1,15 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const controller_1 = require("./controller");
+// import { getupdatedetailpolling } from "../../api/profile/auth/controller";
+const router = (0, express_1.Router)();
+router.post("/balance", controller_1.getBalance);
+router.post("/get-balance", controller_1.getBalanceWebhook);
+router.post("/deduct", controller_1.deductBalance);
+router.post("/login", controller_1.login);
+router.post("/add", controller_1.addBalance);
+router.post("/register", controller_1.register);
+router.get("/get", controller_1.getAllUser);
+// router.post("/testDetail", getupdatedetailpolling);
+exports.default = router;
