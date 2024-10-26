@@ -27,45 +27,6 @@ const isLoginAdmin = (req, res, next) => {
     }
 };
 exports.isLoginAdmin = isLoginAdmin;
-// export const isLoginUser = async (
-//   req: CustomRequest,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//   try {
-//     const token = req.headers.authorization?.replace("Bearer ", "") ?? null;
-//     if (!token) {
-//       return res
-//         .status(401)
-//         .json({ message: "Unauthorized: No token provided" });
-//     }
-//     // Cek apakah token ada di dalam blacklist di database
-//     const [blacklistedToken]: any = await pool.query(
-//       "SELECT * FROM token_blacklist WHERE token = ?",
-//       [token]
-//     );
-//     if (blacklistedToken.length > 0) {
-//       return res.status(401).json({ message: "Unauthorized: Invalid token" });
-//     }
-//     jwt.verify(token, JWT_SECRET, (err, decoded: any) => {
-//       if (err) {
-//         if (err.name === "TokenExpiredError") {
-//           return res
-//             .status(401)
-//             .json({ message: "Unauthorized: Token has expired" });
-//         } else {
-//           return res
-//             .status(401)
-//             .json({ message: "Unauthorized: Invalid token" });
-//         }
-//       }
-//       req.user = decoded.userData; // Ensure this contains valid token type
-//       next();
-//     });
-//   } catch (error) {
-//     res.status(500).json({ message: "Error processing authentication", error });
-//   }
-// };
 const isLoginUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {

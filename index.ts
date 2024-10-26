@@ -99,6 +99,14 @@ declare module "express-session" {
       picture: string;
       name: string;
     };
+    admin: {
+      id: number;
+      username: string;
+      email: string;
+      status: string;
+      picture: string;
+      name: string;
+    };
   }
 }
 

@@ -6,6 +6,7 @@ import pool from "../../db";
 
 interface CustomSession extends session.Session {
   user?: { id: number; email: string; status: string; name: string };
+  admin?: { id: number; email: string; status: string; name: string };
 }
 
 const JWT_SECRET = "your_secret_key_here";
@@ -15,7 +16,7 @@ export const isLoginAdmin = (
   res: Response,
   next: NextFunction
 ) => {
-  if (!req.session.user) {
+  if (!req.session.admin) {
     req.flash(
       "alertMessage",
       "Sorry you are not authorized to access this page"
@@ -32,50 +33,6 @@ interface CustomRequest extends Request {
   user?: { userId?: any };
 }
 
-// export const isLoginUser = async (
-//   req: CustomRequest,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//   try {
-//     const token = req.headers.authorization?.replace("Bearer ", "") ?? null;
-
-//     if (!token) {
-//       return res
-//         .status(401)
-//         .json({ message: "Unauthorized: No token provided" });
-//     }
-
-//     // Cek apakah token ada di dalam blacklist di database
-//     const [blacklistedToken]: any = await pool.query(
-//       "SELECT * FROM token_blacklist WHERE token = ?",
-//       [token]
-//     );
-
-//     if (blacklistedToken.length > 0) {
-//       return res.status(401).json({ message: "Unauthorized: Invalid token" });
-//     }
-
-//     jwt.verify(token, JWT_SECRET, (err, decoded: any) => {
-//       if (err) {
-//         if (err.name === "TokenExpiredError") {
-//           return res
-//             .status(401)
-//             .json({ message: "Unauthorized: Token has expired" });
-//         } else {
-//           return res
-//             .status(401)
-//             .json({ message: "Unauthorized: Invalid token" });
-//         }
-//       }
-
-//       req.user = decoded.userData; // Ensure this contains valid token type
-//       next();
-//     });
-//   } catch (error) {
-//     res.status(500).json({ message: "Error processing authentication", error });
-//   }
-// };
 
 export const isLoginUser = async (
   req: CustomRequest,

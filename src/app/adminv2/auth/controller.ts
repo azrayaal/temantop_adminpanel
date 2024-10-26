@@ -23,7 +23,7 @@ export const actionSignin = async (req: Request, res: Response) => {
         const checkPassword = await bcrypt.compare(password, admin.password);
         
         if (checkPassword) {
-          req.session.user = {
+          req.session.admin = {
             id: admin.id,
             username: admin.username,
             picture: admin.picture,
