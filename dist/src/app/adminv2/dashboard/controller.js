@@ -22,7 +22,7 @@ const index = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const [giftRows] = yield db_1.default.query("SELECT COUNT(*) AS count FROM gift");
         const [voucherRows] = yield db_1.default.query("SELECT COUNT(*) AS count FROM voucher");
         const [bankRows] = yield db_1.default.query("SELECT COUNT(*) AS count FROM bank");
-        const [transactionRows] = yield db_1.default.query("SELECT COUNT(*) AS count FROM gift_transaction");
+        const [transactionRows] = yield db_1.default.query("SELECT COUNT(*) AS count FROM transaction");
         res.render("adminv2/index", {
             name: (_a = req.session.user) === null || _a === void 0 ? void 0 : _a.username,
             email: (_b = req.session.user) === null || _b === void 0 ? void 0 : _b.email,

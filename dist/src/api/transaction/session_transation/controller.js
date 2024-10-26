@@ -93,10 +93,11 @@ const createSessionTransaction = (req, res) => __awaiter(void 0, void 0, void 0,
             });
         }
         // Jika saldo mencukupi, buat transaksi baru di tabel session_transaction
-        const [result] = yield db_1.default.query("INSERT INTO session_transaction (userId, amount, stream_sessionId, paid) VALUES (?, ?, ?, ?)", [userId, amount, stream_sessionId, 1]);
-        // update table transaction
+        const [result] = yield db_1.default.query("INSERT INTO session_transaction (userId, amount, stream_sessionId, paid, description) VALUES (?, ?, ?, ?, ?)", [userId, amount, stream_sessionId, 1, "Paid for stream session"]);
+        // Ambil `insertId` dari transaksi yang baru saja dibuat
         const resultId = result.insertId;
-        yield db_1.default.query("INSERT INTO transaction (userId, transactionType, transactionId) VALUES (?, ?, ?, ?, ?)", [userId, "session_transaction", resultId]);
+        // Masukkan ke dalam tabel `transaction`
+        yield db_1.default.query("INSERT INTO transaction (userId, transactionType, transactionId) VALUES (?, ?, ?)", [userId, "session_transaction", resultId]);
         // Jika tidak ada baris yang terpengaruh, artinya insert gagal
         if (result.affectedRows === 0) {
             return res.status(500).json({ success: false, message: "Failed to create transaction" });

@@ -18,6 +18,7 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const db_1 = __importDefault(require("../../../../db")); // Adjust the import according to your actual db configuration
 require("dotenv").config();
 const axios_1 = __importDefault(require("axios"));
+const controller_1 = require("../../../app/adminv2/agent/controller");
 // import { OAuth2Client } from "google-auth-library";
 const JWT_SECRET = process.env.JWT_SECRET;
 const addBalance = (player_id) => __awaiter(void 0, void 0, void 0, function* () {
@@ -78,6 +79,17 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 message: "Email already exists",
             });
         }
+        // add player_id
+        // Generate a unique player_id
+        let player_id = (0, controller_1.randomString)(8);
+        while (true) {
+            const [checkPlayerId] = yield db_1.default.query("SELECT * FROM user WHERE player_id = ?", [player_id]);
+            if (checkPlayerId.length === 0) {
+                break; // Player ID is unique
+            }
+            // Generate a new player_id if it already exists
+            player_id = (0, controller_1.randomString)(8);
+        }
         // Check if the username  already exists
         const [existingUsername] = yield db_1.default.query("SELECT * FROM user WHERE username = ? ", [username]);
         const [existingChannelName] = yield db_1.default.query("SELECT * FROM user WHERE channelName = ? ", [username]);
@@ -87,7 +99,7 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             });
         }
         // Insert the new user into the database
-        yield db_1.default.query("INSERT INTO user (email, username, profilePicture, password, channelName) VALUES (?, ?, ?, ?, ?)", [email, username, profilePicture, bcryptedPassword, username]);
+        yield db_1.default.query("INSERT INTO user (email, username, profilePicture, password, channelName, player_id) VALUES (?, ?, ?, ?, ?, ?)", [email, username, profilePicture, bcryptedPassword, username, player_id]);
         res.json({
             success: true,
             message: "Registered successfully",
@@ -134,8 +146,18 @@ const registerAgent = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         }
         const stream = 1;
         const channelName = username;
+        // Generate a unique player_id
+        let player_id = (0, controller_1.randomString)(8);
+        while (true) {
+            const [checkPlayerId] = yield db_1.default.query("SELECT * FROM user WHERE player_id = ?", [player_id]);
+            if (checkPlayerId.length === 0) {
+                break; // Player ID is unique
+            }
+            // Generate a new player_id if it already exists
+            player_id = (0, controller_1.randomString)(8);
+        }
         // Insert the new user into the database
-        yield db_1.default.query("INSERT INTO user (email, username, profilePicture, password, stream, channelName) VALUES (?, ?, ?, ?, ?, ?)", [email, username, profilePicture, bcryptedPassword, stream, channelName]);
+        yield db_1.default.query("INSERT INTO user (email, username, profilePicture, password, stream, channelName, player_id) VALUES (?, ?, ?, ?, ?, ?, ?)", [email, username, profilePicture, bcryptedPassword, stream, channelName, player_id]);
         res.json({
             success: true,
             message: "Registered successfully",

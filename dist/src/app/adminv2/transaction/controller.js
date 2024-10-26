@@ -1,27 +1,4 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -35,9 +12,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.exportTransactionsToExcel = exports.getTransactionSummary = exports.getTransactions = void 0;
+exports.getTransactionDetail = exports.getTransactions = void 0;
 const db_1 = __importDefault(require("../../../../db"));
-const XLSX = __importStar(require("xlsx")); // Pustaka untuk membuat file Excel
 // Fungsi untuk mendapatkan total pemasukan dari User A
 const getTotalIncomeFromUserA = (userIdA) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
@@ -54,130 +30,153 @@ const getTotalExpensesFromUserB = (userIdB) => __awaiter(void 0, void 0, void 0,
      WHERE userId = ?`, [userIdB]);
     return ((_a = rows[0]) === null || _a === void 0 ? void 0 : _a.totalExpenses) || 0;
 });
-// Controller untuk mendapatkan transaksi
+// Controller for fetching paginated transactions
 const getTransactions = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     try {
-        const [rows] = yield db_1.default.query(`SELECT
-        gt.id,
-        gt.userId,
-        sender.username AS senderName,
-        sender.player_id AS senderPlayerId,
-        gt.receivedId,
-        receiver.username AS receiverName,
-        receiver.player_id AS receiverPlayerId,
-        gt.giftId,
+        // Pagination variables
+        const page = parseInt(req.query.page) || 1;
+        const limit = 15;
+        const offset = (page - 1) * limit;
+        // Query to fetch transactions with user and gift details, ordered by latest
+        const [transactions] = yield db_1.default.query(`SELECT 
+        t.id AS transactionId,
+        t.userId,
+        u.username AS userName,
+        u.player_id AS player_id,
+        t.transactionType,
+        t.transactionId AS relatedTransactionId,
         gt.giftName,
         gt.amount,
         gt.description,
-        gt.createdAt
-      FROM gift_transaction gt
-      LEFT JOIN user sender ON gt.userId = sender.id
-      LEFT JOIN user receiver ON gt.receivedId = receiver.id
-      ORDER BY gt.createdAt DESC`);
-        // Query untuk menghitung total dari semua transaksi
-        const [totalResult] = yield db_1.default.query(`SELECT SUM(gt.amount) AS totalAmount FROM gift_transaction gt`);
-        const totalAmount = ((_a = totalResult[0]) === null || _a === void 0 ? void 0 : _a.totalAmount) || 0;
+        t.createdAt
+      FROM transaction t
+      LEFT JOIN user u ON t.userId = u.id
+      LEFT JOIN gift_transaction gt ON t.transactionType = 'gift_transaction' AND t.transactionId = gt.id
+      ORDER BY t.createdAt DESC
+      LIMIT ? OFFSET ?`, [limit, offset]);
+        // Calculate the total number of transactions
+        const [totalResult] = yield db_1.default.query(`SELECT COUNT(*) AS totalTransactions FROM transaction`);
+        const totalTransactions = ((_a = totalResult[0]) === null || _a === void 0 ? void 0 : _a.totalTransactions) || 0;
+        // Calculate the total amount from gift transactions
+        const [totalAmountResult] = yield db_1.default.query(`SELECT SUM(gt.amount) AS totalAmount 
+       FROM transaction t
+       LEFT JOIN gift_transaction gt ON t.transactionType = 'gift_transaction' AND t.transactionId = gt.id`);
+        const totalAmount = ((_b = totalAmountResult[0]) === null || _b === void 0 ? void 0 : _b.totalAmount) || 0;
+        // Calculate total pages
+        const totalPages = Math.ceil(totalTransactions / limit);
+        // Map over transactions to adjust the transactionType
+        const formattedTransactions = transactions.map((transaction) => {
+            let transactionTypeLabel;
+            switch (transaction.transactionType) {
+                case 'gift_transaction':
+                    transactionTypeLabel = "Gift";
+                    break;
+                case 'session_transaction':
+                    transactionTypeLabel = "Session";
+                    break;
+                case 'withdraw_transaction':
+                    transactionTypeLabel = "Withdraw";
+                    break;
+                case 'topup_transaction':
+                    transactionTypeLabel = "Topup";
+                    break;
+                default:
+                    transactionTypeLabel = "Unknown";
+            }
+            return Object.assign(Object.assign({}, transaction), { transactionType: transactionTypeLabel });
+        });
+        // Render the transactions page with retrieved data
         res.render("adminv2/pages/transaction/index", {
-            name: (_b = req.session.user) === null || _b === void 0 ? void 0 : _b.name,
-            email: (_c = req.session.user) === null || _c === void 0 ? void 0 : _c.email,
+            name: ((_c = req.session.user) === null || _c === void 0 ? void 0 : _c.name) || "Admin",
+            email: ((_d = req.session.user) === null || _d === void 0 ? void 0 : _d.email) || "admin@example.com",
             title: "Transactions",
-            transactions: rows,
-            totalAmount: totalAmount,
+            transactions: formattedTransactions,
+            totalAmount,
+            currentPage: page,
+            totalPages,
         });
     }
-    catch (err) {
-        console.log(err);
+    catch (error) {
+        console.error("Error fetching transactions:", error);
         res.status(500).send("Internal Server Error");
     }
 });
 exports.getTransactions = getTransactions;
-// Controller untuk mendapatkan summary transaksi
-const getTransactionSummary = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getTransactionDetail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
+    const { id } = req.params;
     try {
-        const userIdA = parseInt(req.query.userIdA, 10); // Ambil ID user A dari query params
-        const userIdB = parseInt(req.query.userIdB, 10); // Ambil ID user B dari query params
-        // Menghitung total pemasukan dari User A dan total pengeluaran dari User B
-        const totalIncomeFromUserA = yield getTotalIncomeFromUserA(userIdA);
-        const totalExpensesFromUserB = yield getTotalExpensesFromUserB(userIdB);
-        // Render halaman dengan data
-        res.render("adminv2/pages/transaction/summary", {
-            title: "Transaction Summary",
-            totalIncomeFromUserA: totalIncomeFromUserA.toFixed(2),
-            totalExpensesFromUserB: totalExpensesFromUserB.toFixed(2),
-            userIdA,
-            userIdB,
-        });
-    }
-    catch (err) {
-        console.log(err);
-        res.status(500).send("Internal Server Error");
-    }
-});
-exports.getTransactionSummary = getTransactionSummary;
-// Controller untuk ekspor PDF menggunakan jsPDF
-// Controller untuk menghasilkan laporan transaksi sebagai Excel
-const exportTransactionsToExcel = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { startDate, endDate } = req.query; // Mendapatkan parameter tanggal
-        // Validasi apakah startDate dan endDate diberikan
-        if (!startDate || !endDate) {
-            return res.status(400).send("Please provide both startDate and endDate.");
+        // Fetch the basic transaction details from the main transaction table
+        const [transactionBase] = yield db_1.default.query(`SELECT 
+    t.id AS transactionId,
+    t.userId,
+    t.transactionId,
+    t.transactionType,
+    u.username AS userName,
+    u.player_id AS userPlayerId,
+    t.createdAt,
+    CASE 
+        WHEN t.transactionType = 'gift_transaction' THEN gt.amount
+        WHEN t.transactionType = 'session_transaction' THEN st.amount
+        WHEN t.transactionType = 'withdraw_transaction' THEN wt.amount
+        WHEN t.transactionType = 'topup_transaction' THEN tt.amount
+        ELSE NULL
+    END AS amount
+FROM transaction t
+LEFT JOIN user u ON t.userId = u.id
+LEFT JOIN gift_transaction gt ON t.transactionType = 'gift_transaction' AND t.transactionId = gt.id
+LEFT JOIN session_transaction st ON t.transactionType = 'session_transaction' AND t.transactionId = st.id
+LEFT JOIN withdraw_transaction wt ON t.transactionType = 'withdraw_transaction' AND t.transactionId = wt.id
+LEFT JOIN topup_transaction tt ON t.transactionType = 'topup_transaction' AND t.transactionId = tt.id
+WHERE t.id = ?;
+`, [id]);
+        const formatRupiah = (angka) => {
+            return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        };
+        // if (transactionBase.length === 0) {
+        //   return res.status(404).render("adminv2/pages/transaction/notfound", {
+        //     message: "Transaction not found",
+        //   });
+        // }
+        const transaction = transactionBase[0];
+        let transactionDetail;
+        // Fetch additional details based on transactionType
+        switch (transaction.transactionType) {
+            case "gift_transaction":
+                const [giftDetails] = yield db_1.default.query(`SELECT giftName, amount, description FROM gift_transaction WHERE id = ?`, [transaction.relatedTransactionId]);
+                transactionDetail = giftDetails[0];
+                break;
+            case "session_transaction":
+                const [sessionDetails] = yield db_1.default.query(`SELECT stream_sessionId, amount, description FROM session_transaction WHERE id = ?`, [transaction.relatedTransactionId]);
+                transactionDetail = sessionDetails[0];
+                break;
+            case "withdraw_transaction":
+                const [withdrawDetails] = yield db_1.default.query(`SELECT amount, description FROM withdraw_transaction WHERE id = ?`, [transaction.relatedTransactionId]);
+                transactionDetail = withdrawDetails[0];
+                break;
+            case "topup_transaction":
+                const [topupDetails] = yield db_1.default.query(`SELECT amount, description FROM topup_transaction WHERE id = ?`, [transaction.relatedTransactionId]);
+                transactionDetail = topupDetails[0];
+                break;
+            default:
+                return res.status(400).render("adminv2/pages/transaction/error", {
+                    message: "Unknown transaction type",
+                });
         }
-        // Query SQL untuk mendapatkan transaksi berdasarkan rentang tanggal
-        const query = `
-      SELECT
-        gt.id,
-        gt.userId,
-        sender.username AS senderName,
-        gt.receivedId,
-        receiver.username AS receiverName,
-        gt.giftId,
-        gt.giftName,
-        gt.amount,
-        gt.createdAt
-      FROM gift_transaction gt
-      LEFT JOIN user sender ON gt.userId = sender.id
-      LEFT JOIN user receiver ON gt.receivedId = receiver.id
-      WHERE DATE(gt.createdAt) BETWEEN ? AND ?
-      ORDER BY gt.createdAt DESC
-    `;
-        // Menjalankan query dengan parameter tanggal yang diterima
-        const [rows] = yield db_1.default.query(query, [
-            startDate,
-            endDate,
-        ]);
-        // Konversi data transaksi ke dalam format array untuk dimasukkan ke Excel
-        const data = rows.map((transaction) => ({
-            ID: transaction.id,
-            Sender: transaction.senderName,
-            Receiver: transaction.receiverName,
-            GiftName: transaction.giftName,
-            Amount: transaction.amount,
-            // Memformat createdAt ke dalam format tanggal Indonesia
-            Date: new Date(transaction.createdAt).toLocaleDateString("id-ID", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-            }), // Misalnya "12 September 2024"
-        }));
-        // Membuat worksheet Excel dari data transaksi
-        const worksheet = XLSX.utils.json_to_sheet(data);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
-        // Menghasilkan buffer Excel
-        const excelBuffer = XLSX.write(workbook, {
-            type: "buffer",
-            bookType: "xlsx",
+        // Render the details page with combined data
+        res.render("adminv2/pages/transaction/detail", {
+            name: ((_a = req.session.user) === null || _a === void 0 ? void 0 : _a.name) || "Admin",
+            email: ((_b = req.session.user) === null || _b === void 0 ? void 0 : _b.email) || "admin@example.com",
+            title: "Transaction Details",
+            transaction: Object.assign(Object.assign(Object.assign({}, transaction), transactionDetail), { amount: formatRupiah(transaction.amount) }),
         });
-        // Mengirimkan file Excel sebagai respons
-        res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        res.setHeader("Content-Disposition", `attachment; filename=transactions_report_${startDate}_to_${endDate}.xlsx`);
-        res.send(excelBuffer); // Mengirimkan file Excel ke klien
     }
-    catch (err) {
-        console.log("Error occurred during Excel generation:", err);
-        res.status(500).send("Internal Server Error");
+    catch (error) {
+        console.error("Error fetching transaction detail:", error);
+        res.status(500).render("adminv2/pages/transaction/error", {
+            message: "Internal Server Error",
+        });
     }
 });
-exports.exportTransactionsToExcel = exportTransactionsToExcel;
+exports.getTransactionDetail = getTransactionDetail;

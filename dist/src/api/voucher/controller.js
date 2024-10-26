@@ -34,7 +34,7 @@ const redeemVoucher = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     if (voucherData) {
         yield db_1.default.query("UPDATE voucher SET is_used = 1, redeem_by = ? WHERE unique_code = ?", [user === null || user === void 0 ? void 0 : user.id, voucher]);
         yield db_1.default.query("UPDATE user SET balance = balance + ? WHERE id = ?", [voucherData.price, user === null || user === void 0 ? void 0 : user.id]);
-        yield db_1.default.query("INSERT INTO gift_transaction (receivedId, amount, description) VALUES (?, ?, ?)", [user === null || user === void 0 ? void 0 : user.id, voucherData.price, `Redeemed voucher ${voucherData.name}(${voucher})`]);
+        yield db_1.default.query("INSERT INTO topup_transaction (userId, amount, description) VALUES (?, ?, ?)", [user === null || user === void 0 ? void 0 : user.id, voucherData.price, `Redeemed voucher ${voucherData.name}(${voucher})`]);
         res.json({ success: true, message: `Success redeem voucher ${voucher}` });
     }
 });

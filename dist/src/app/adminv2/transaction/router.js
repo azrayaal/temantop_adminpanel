@@ -6,6 +6,5 @@ const auth_1 = require("../../../middleware/auth");
 const router = (0, express_1.Router)();
 // Rute untuk menampilkan halaman agent
 router.get("/", auth_1.isLoginAdmin, controller_1.getTransactions);
-router.get("/summary", auth_1.isLoginAdmin, controller_1.getTransactionSummary);
-router.get("/export", auth_1.isLoginAdmin, controller_1.exportTransactionsToExcel);
+router.get("/:id", auth_1.isLoginAdmin, controller_1.getTransactionDetail);
 exports.default = router;

@@ -130,215 +130,356 @@
 
 <script>
   // Fungsi untuk mengekspor data yang difilter ke Excel
-  function exportToExcel() {
-    const table = document.getElementById("transactionTable");
-    const rows = Array.from(table.querySelectorAll("tbody tr")); // Ambil hanya body tabel
+//   function exportToExcel() {
+//     const table = document.getElementById("transactionTable");
+//     const rows = Array.from(table.querySelectorAll("tbody tr")); // Ambil hanya body tabel
 
-    // Siapkan array untuk menyimpan data yang akan diekspor
-    const data = [];
-    let totalAmount = 0; // Untuk menghitung total Amount
+//     // Siapkan array untuk menyimpan data yang akan diekspor
+//     const data = [];
+//     let totalAmount = 0; // Untuk menghitung total Amount
 
-    // Header tabel
-    const headers = Array.from(table.querySelectorAll("thead th")).map(
-      (th) => th.innerText
+//     // Header tabel
+//     const headers = Array.from(table.querySelectorAll("thead th")).map(
+//       (th) => th.innerText
+//     );
+//     data.push(headers); // Masukkan header ke dalam data
+
+//     // Loop melalui baris-baris tabel dan ambil data yang terlihat (yang difilter)
+//     rows.forEach((row) => {
+//       if (row.style.display !== "none") {
+//         // Hanya baris yang terlihat
+//         const rowData = Array.from(row.querySelectorAll("td")).map(
+//           (cell) => cell.innerText
+//         );
+//         data.push(rowData);
+
+//         // Hitung total amount dari kolom ke-6 (Amount)
+//         const amountValue = parseFloat(
+//           row.querySelectorAll("td")[6]?.innerText.replace(/[^0-9.-]+/g, "") ||
+//             "0"
+//         );
+//         totalAmount += !isNaN(amountValue) ? amountValue : 0;
+//       }
+//     });
+
+//     // Tambahkan baris total di akhir
+//     const totalRow = Array(headers.length).fill(""); // Baris kosong
+//     totalRow[6] = `Total Income: Rp. ${totalAmount.toFixed(2)}`; // Kolom Amount berada di indeks ke-6
+//     data.push(totalRow); // Masukkan baris total ke dalam data
+
+//     // Buat worksheet dari data yang diambil
+//     const worksheet = XLSX.utils.aoa_to_sheet(data);
+
+//     // Buat workbook dan tambahkan worksheet
+//     const workbook = XLSX.utils.book_new();
+//     XLSX.utils.book_append_sheet(workbook, worksheet, "Filtered Transactions");
+
+//     // Ekspor ke file Excel
+//     XLSX.writeFile(workbook, "filtered_transactions_report.xlsx");
+//   }
+
+//   // Event listener untuk tombol export
+//   document
+//     .getElementById("exportButton")
+//     .addEventListener("click", exportToExcel);
+// </script>
+
+// <!--  -->
+// <script>
+//   let sortDirection = {}; // Object untuk menyimpan status sort untuk setiap kolom
+//   let currentPage = 1;
+//   let totalPages = 1;
+//   const rowsPerPage = 10; // Number of rows per page
+
+//   // Fungsi untuk memperbarui nomor urut setelah sorting atau filtering
+//   // Fungsi untuk memperbarui nomor urut setelah sorting atau filtering
+//   function updateRowNumbers() {
+//     const rows = document.querySelectorAll("#transactionTable tbody tr"); // Ambil semua baris dalam tabel
+//     let visibleRowIndex = 1; // Mulai nomor urut dari 1
+
+//     rows.forEach((row) => {
+//       if (row.style.display !== "none") {
+//         // Hanya update nomor untuk baris yang terlihat
+//         const numberCell = row.querySelector(".row-number");
+//         if (numberCell) {
+//           numberCell.innerText = visibleRowIndex; // Set nomor urut berdasarkan urutan tampilan
+//           visibleRowIndex++; // Increment nomor urut hanya untuk baris yang terlihat
+//         }
+//       }
+//     });
+//   }
+
+//   // Fungsi untuk menghitung total income dari kolom Amount
+//   function calculateTotalIncome() {
+//     const table = document.getElementById("transactionTable");
+//     const rows = Array.from(table.querySelectorAll("tbody tr")); // Skip header row
+//     let totalAmount = 0;
+
+//     rows.forEach((row) => {
+//       // Hanya menghitung jumlah dari baris yang terlihat
+//       if (row.style.display !== "none") {
+//         const amountCell = row.cells[6].innerText; // Kolom "Amount" ada di index ke-6
+//         const amount = parseFloat(amountCell.replace(/[^0-9.-]+/g, "")); // Menghapus karakter selain angka dan tanda minus/desimal
+//         if (!isNaN(amount)) {
+//           totalAmount += amount;
+//         }
+//       }
+//     });
+
+//     // Tampilkan total amount ke elemen dengan id 'totalIncome'
+//     document.getElementById("totalIncome").innerText =
+//       "Rp. " + totalAmount.toFixed(2);
+//   }
+
+//   // Fungsi untuk parsing tanggal manual dari string
+//   function parseDate(dateString) {
+//     const [datePart, timePart] = dateString.split(","); // Split date and time by comma
+//     const [day, month, year] = datePart.trim().split("/"); // Split day, month, year by '/'
+//     const time = timePart.trim(); // Get the time part as is (HH:MM:SS)
+//     return new Date(`${month}/${day}/${year} ${time}`); // Construct date in a format JS understands (MM/DD/YYYY HH:MM:SS)
+//   }
+
+//   // General sorting function for table columns
+//   function sortTable(columnIndex, isDate = false) {
+//     const table = document.getElementById("transactionTable");
+//     const tbody = table.querySelector("tbody");
+//     let rows = Array.from(tbody.getElementsByTagName("tr"));
+
+//     // Ambil hanya baris yang terlihat
+//     rows = rows.filter((row) => row.style.display !== "none");
+
+//     rows.sort((a, b) => {
+//       let cellA = a.getElementsByTagName("td")[columnIndex].textContent.trim();
+//       let cellB = b.getElementsByTagName("td")[columnIndex].textContent.trim();
+//       let comparison = 0;
+
+//       if (isDate) {
+//         const dateA = new Date(cellA); // Parsing tanggal menggunakan new Date()
+//         const dateB = new Date(cellB);
+//         comparison = dateA - dateB; // Membandingkan tanggal
+//       } else {
+//         if (cellA < cellB) comparison = -1;
+//         if (cellA > cellB) comparison = 1;
+//       }
+
+//       return sortDirection[columnIndex] === "asc" ? comparison : -comparison;
+//     });
+
+//     // Toggle arah sorting
+//     sortDirection[columnIndex] =
+//       sortDirection[columnIndex] === "asc" ? "desc" : "asc";
+
+//     // Re-attach rows yang sudah disort
+//     rows.forEach((row) => tbody.appendChild(row));
+
+//     updateRowNumbers(); // Memperbarui nomor urut setelah sorting
+//   }
+
+//   // Sorting function specifically for the date column
+//   function sortTableByDate() {
+//     const dateHeader = document.getElementById("dateHeader"); // Get the header for the date column
+
+//     // Add click event listener to the dateHeader
+//     dateHeader.addEventListener("click", () => {
+//       // Sort the table by the date column
+//       sortTable(9, true); // Assume column index 9 is the date column, adjust if needed
+//     }); // Assume column 9 is the date column
+//   }
+
+//   // Fungsi filtering berdasarkan tanggal
+//   function filterByDate() {
+//     const startDateInput = document.getElementById("startDate").value;
+//     const endDateInput = document.getElementById("endDate").value;
+
+//     if (startDateInput && endDateInput) {
+//       const startDate = new Date(startDateInput);
+//       startDate.setHours(0, 0, 0, 0); // Set start date to 00:00
+
+//       const endDate = new Date(endDateInput);
+//       endDate.setHours(23, 59, 59, 999); // Set end date to 23:59:59
+
+//       const table = document.getElementById("transactionTable");
+//       const rows = Array.from(table.querySelectorAll("tbody tr")); // Ambil hanya body tabel
+
+//       rows.forEach((row) => {
+//         const dateCell = new Date(row.cells[9].innerText); // Asumsikan kolom ke-9 adalah kolom tanggal
+
+//         // Tampilkan baris hanya jika tanggal berada dalam rentang yang dipilih
+//         if (dateCell >= startDate && dateCell <= endDate) {
+//           row.style.display = ""; // Tampilkan baris
+//         } else {
+//           row.style.display = "none"; // Sembunyikan baris
+//         }
+//       });
+
+//       updateRowNumbers(); // Selalu perbarui nomor urut setelah filter
+//       calculateTotalIncome(); // Hitung ulang total income setelah filter diterapkan
+//     } else {
+//       alert("Please select both start and end dates.");
+//     }
+//   }
+
+//   // Call both filter and sort in the desired order
+//   function filterAndSort() {
+//     filterByDate(); // Filter first, then sort the filtered rows
+//     sortTableByDate(); // Optionally call the sort function after filtering
+//   }
+
+//   // Setup initial table behavior
+//   document.addEventListener("DOMContentLoaded", () => {
+//     const headers = document.querySelectorAll("#transactionTable th");
+//     headers.forEach((header, index) => {
+//       if (index >= 1 && index <= 8) {
+//         // Column indices for sorting (skip No)
+//         header.addEventListener("click", () => {
+//           const isDate = index === 9; // 9 is the date column index
+//           sortTable(index, isDate);
+//         });
+//       }
+//     });
+//     sortTableByDate();
+//     updateRowNumbers(); // Selalu perbarui nomor urut saat halaman pertama kali dimuat
+//     calculateTotalIncome(); // Hitung total income saat halaman pertama kali dimuat
+//   });
+
+
+
+// Function to export filtered data to Excel
+function exportToExcel() {
+  const table = document.getElementById("transactionTable");
+  const rows = Array.from(table.querySelectorAll("tbody tr")).filter(
+    (row) => row.style.display !== "none"
+  );
+
+  // Prepare data array
+  const data = [];
+  let totalAmount = 0;
+
+  // Table headers
+  const headers = Array.from(table.querySelectorAll("thead th")).map(
+    (th) => th.innerText
+  );
+  data.push(headers);
+
+  // Loop through visible rows
+  rows.forEach((row) => {
+    const rowData = Array.from(row.querySelectorAll("td")).map(
+      (cell) => cell.innerText
     );
-    data.push(headers); // Masukkan header ke dalam data
+    data.push(rowData);
 
-    // Loop melalui baris-baris tabel dan ambil data yang terlihat (yang difilter)
-    rows.forEach((row) => {
-      if (row.style.display !== "none") {
-        // Hanya baris yang terlihat
-        const rowData = Array.from(row.querySelectorAll("td")).map(
-          (cell) => cell.innerText
-        );
-        data.push(rowData);
-
-        // Hitung total amount dari kolom ke-6 (Amount)
-        const amountValue = parseFloat(
-          row.querySelectorAll("td")[6]?.innerText.replace(/[^0-9.-]+/g, "") ||
-            "0"
-        );
-        totalAmount += !isNaN(amountValue) ? amountValue : 0;
-      }
-    });
-
-    // Tambahkan baris total di akhir
-    const totalRow = Array(headers.length).fill(""); // Baris kosong
-    totalRow[6] = `Total Income: Rp. ${totalAmount.toFixed(2)}`; // Kolom Amount berada di indeks ke-6
-    data.push(totalRow); // Masukkan baris total ke dalam data
-
-    // Buat worksheet dari data yang diambil
-    const worksheet = XLSX.utils.aoa_to_sheet(data);
-
-    // Buat workbook dan tambahkan worksheet
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Filtered Transactions");
-
-    // Ekspor ke file Excel
-    XLSX.writeFile(workbook, "filtered_transactions_report.xlsx");
-  }
-
-  // Event listener untuk tombol export
-  document
-    .getElementById("exportButton")
-    .addEventListener("click", exportToExcel);
-</script>
-
-<!--  -->
-<script>
-  let sortDirection = {}; // Object untuk menyimpan status sort untuk setiap kolom
-  let currentPage = 1;
-  let totalPages = 1;
-  const rowsPerPage = 10; // Number of rows per page
-
-  // Fungsi untuk memperbarui nomor urut setelah sorting atau filtering
-  // Fungsi untuk memperbarui nomor urut setelah sorting atau filtering
-  function updateRowNumbers() {
-    const rows = document.querySelectorAll("#transactionTable tbody tr"); // Ambil semua baris dalam tabel
-    let visibleRowIndex = 1; // Mulai nomor urut dari 1
-
-    rows.forEach((row) => {
-      if (row.style.display !== "none") {
-        // Hanya update nomor untuk baris yang terlihat
-        const numberCell = row.querySelector(".row-number");
-        if (numberCell) {
-          numberCell.innerText = visibleRowIndex; // Set nomor urut berdasarkan urutan tampilan
-          visibleRowIndex++; // Increment nomor urut hanya untuk baris yang terlihat
-        }
-      }
-    });
-  }
-
-  // Fungsi untuk menghitung total income dari kolom Amount
-  function calculateTotalIncome() {
-    const table = document.getElementById("transactionTable");
-    const rows = Array.from(table.querySelectorAll("tbody tr")); // Skip header row
-    let totalAmount = 0;
-
-    rows.forEach((row) => {
-      // Hanya menghitung jumlah dari baris yang terlihat
-      if (row.style.display !== "none") {
-        const amountCell = row.cells[6].innerText; // Kolom "Amount" ada di index ke-6
-        const amount = parseFloat(amountCell.replace(/[^0-9.-]+/g, "")); // Menghapus karakter selain angka dan tanda minus/desimal
-        if (!isNaN(amount)) {
-          totalAmount += amount;
-        }
-      }
-    });
-
-    // Tampilkan total amount ke elemen dengan id 'totalIncome'
-    document.getElementById("totalIncome").innerText =
-      "Rp. " + totalAmount.toFixed(2);
-  }
-
-  // Fungsi untuk parsing tanggal manual dari string
-  function parseDate(dateString) {
-    const [datePart, timePart] = dateString.split(","); // Split date and time by comma
-    const [day, month, year] = datePart.trim().split("/"); // Split day, month, year by '/'
-    const time = timePart.trim(); // Get the time part as is (HH:MM:SS)
-    return new Date(`${month}/${day}/${year} ${time}`); // Construct date in a format JS understands (MM/DD/YYYY HH:MM:SS)
-  }
-
-  // General sorting function for table columns
-  function sortTable(columnIndex, isDate = false) {
-    const table = document.getElementById("transactionTable");
-    const tbody = table.querySelector("tbody");
-    let rows = Array.from(tbody.getElementsByTagName("tr"));
-
-    // Ambil hanya baris yang terlihat
-    rows = rows.filter((row) => row.style.display !== "none");
-
-    rows.sort((a, b) => {
-      let cellA = a.getElementsByTagName("td")[columnIndex].textContent.trim();
-      let cellB = b.getElementsByTagName("td")[columnIndex].textContent.trim();
-      let comparison = 0;
-
-      if (isDate) {
-        const dateA = new Date(cellA); // Parsing tanggal menggunakan new Date()
-        const dateB = new Date(cellB);
-        comparison = dateA - dateB; // Membandingkan tanggal
-      } else {
-        if (cellA < cellB) comparison = -1;
-        if (cellA > cellB) comparison = 1;
-      }
-
-      return sortDirection[columnIndex] === "asc" ? comparison : -comparison;
-    });
-
-    // Toggle arah sorting
-    sortDirection[columnIndex] =
-      sortDirection[columnIndex] === "asc" ? "desc" : "asc";
-
-    // Re-attach rows yang sudah disort
-    rows.forEach((row) => tbody.appendChild(row));
-
-    updateRowNumbers(); // Memperbarui nomor urut setelah sorting
-  }
-
-  // Sorting function specifically for the date column
-  function sortTableByDate() {
-    const dateHeader = document.getElementById("dateHeader"); // Get the header for the date column
-
-    // Add click event listener to the dateHeader
-    dateHeader.addEventListener("click", () => {
-      // Sort the table by the date column
-      sortTable(9, true); // Assume column index 9 is the date column, adjust if needed
-    }); // Assume column 9 is the date column
-  }
-
-  // Fungsi filtering berdasarkan tanggal
-  function filterByDate() {
-    const startDateInput = document.getElementById("startDate").value;
-    const endDateInput = document.getElementById("endDate").value;
-
-    if (startDateInput && endDateInput) {
-      const startDate = new Date(startDateInput);
-      startDate.setHours(0, 0, 0, 0); // Set start date to 00:00
-
-      const endDate = new Date(endDateInput);
-      endDate.setHours(23, 59, 59, 999); // Set end date to 23:59:59
-
-      const table = document.getElementById("transactionTable");
-      const rows = Array.from(table.querySelectorAll("tbody tr")); // Ambil hanya body tabel
-
-      rows.forEach((row) => {
-        const dateCell = new Date(row.cells[9].innerText); // Asumsikan kolom ke-9 adalah kolom tanggal
-
-        // Tampilkan baris hanya jika tanggal berada dalam rentang yang dipilih
-        if (dateCell >= startDate && dateCell <= endDate) {
-          row.style.display = ""; // Tampilkan baris
-        } else {
-          row.style.display = "none"; // Sembunyikan baris
-        }
-      });
-
-      updateRowNumbers(); // Selalu perbarui nomor urut setelah filter
-      calculateTotalIncome(); // Hitung ulang total income setelah filter diterapkan
-    } else {
-      alert("Please select both start and end dates.");
-    }
-  }
-
-  // Call both filter and sort in the desired order
-  function filterAndSort() {
-    filterByDate(); // Filter first, then sort the filtered rows
-    sortTableByDate(); // Optionally call the sort function after filtering
-  }
-
-  // Setup initial table behavior
-  document.addEventListener("DOMContentLoaded", () => {
-    const headers = document.querySelectorAll("#transactionTable th");
-    headers.forEach((header, index) => {
-      if (index >= 1 && index <= 8) {
-        // Column indices for sorting (skip No)
-        header.addEventListener("click", () => {
-          const isDate = index === 9; // 9 is the date column index
-          sortTable(index, isDate);
-        });
-      }
-    });
-    sortTableByDate();
-    updateRowNumbers(); // Selalu perbarui nomor urut saat halaman pertama kali dimuat
-    calculateTotalIncome(); // Hitung total income saat halaman pertama kali dimuat
+    const amountValue = parseFloat(
+      row.querySelectorAll("td")[5]?.innerText.replace(/[^0-9.-]+/g, "") || "0"
+    );
+    totalAmount += !isNaN(amountValue) ? amountValue : 0;
   });
+
+  // Add total row at the end
+  const totalRow = Array(headers.length).fill("");
+  totalRow[5] = `Total Income: Rp. ${totalAmount.toFixed(2)}`;
+  data.push(totalRow);
+
+  const worksheet = XLSX.utils.aoa_to_sheet(data);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Filtered Transactions");
+  XLSX.writeFile(workbook, "filtered_transactions_report.xlsx");
+}
+
+document.getElementById("exportButton").addEventListener("click", exportToExcel);
+
+// Sorting function
+let sortDirection = {};
+function sortTable(columnIndex, isDate = false) {
+  const table = document.getElementById("transactionTable");
+  const tbody = table.querySelector("tbody");
+  let rows = Array.from(tbody.getElementsByTagName("tr")).filter(
+    (row) => row.style.display !== "none"
+  );
+
+  rows.sort((a, b) => {
+    let cellA = a.getElementsByTagName("td")[columnIndex].textContent.trim();
+    let cellB = b.getElementsByTagName("td")[columnIndex].textContent.trim();
+
+    if (isDate) {
+      const dateA = new Date(cellA);
+      const dateB = new Date(cellB);
+      return dateA - dateB;
+    }
+
+    return cellA.localeCompare(cellB, undefined, { numeric: true });
+  });
+
+  if (sortDirection[columnIndex] === "asc") {
+    rows.reverse();
+    sortDirection[columnIndex] = "desc";
+  } else {
+    sortDirection[columnIndex] = "asc";
+  }
+
+  rows.forEach((row) => tbody.appendChild(row));
+  updateRowNumbers();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const headers = document.querySelectorAll("#transactionTable th");
+  headers.forEach((header, index) => {
+    header.addEventListener("click", () => {
+      const isDate = index === 7; // 7 is the Transaction Date column index
+      sortTable(index, isDate);
+    });
+  });
+});
+
+// Filter by date function
+function filterByDate() {
+  const startDate = new Date(document.getElementById("startDate").value);
+  const endDate = new Date(document.getElementById("endDate").value);
+  endDate.setHours(23, 59, 59, 999);
+
+  if (isNaN(startDate) || isNaN(endDate)) {
+    alert("Please select both start and end dates.");
+    return;
+  }
+
+  const rows = Array.from(document.querySelectorAll("#transactionTable tbody tr"));
+
+  rows.forEach((row) => {
+    const dateCell = new Date(row.cells[7].innerText);
+    row.style.display = dateCell >= startDate && dateCell <= endDate ? "" : "none";
+  });
+
+  updateRowNumbers();
+  calculateTotalIncome();
+}
+
+function calculateTotalIncome() {
+  const rows = Array.from(document.querySelectorAll("#transactionTable tbody tr"));
+  let totalAmount = 0;
+
+  rows.forEach((row) => {
+    if (row.style.display !== "none") {
+      const amount = parseFloat(row.cells[5].innerText.replace(/[^0-9.-]+/g, ""));
+      if (!isNaN(amount)) totalAmount += amount;
+    }
+  });
+
+  document.getElementById("totalIncome").innerText = "Rp. " + totalAmount.toFixed(2);
+}
+
+function updateRowNumbers() {
+  const rows = Array.from(document.querySelectorAll("#transactionTable tbody tr"));
+  let visibleRowIndex = 1;
+
+  rows.forEach((row) => {
+    if (row.style.display !== "none") {
+      row.cells[0].innerText = visibleRowIndex++;
+    }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  updateRowNumbers();
+  calculateTotalIncome();
+});
+
 </script>

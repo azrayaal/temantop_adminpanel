@@ -24,32 +24,31 @@ const formatDate = (date) => {
     return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
 };
 const index = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _a, _b, _c;
     try {
-        // Fungsi untuk memformat angka menjadi format Rupiah
-        const formatRupiah = (angka) => {
-            return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-        };
-        // Ambil data dari tabel voucher
+        const formatRupiah = (angka) => 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        const page = parseInt(req.query.page) || 1;
+        const limit = 15;
+        const offset = (page - 1) * limit;
         const alertMessage = req.flash("alertMessage");
         const alertStatus = req.flash("alertStatus");
         const alert = { message: alertMessage, status: alertStatus };
-        const [voucher] = yield db_1.default.query("SELECT * FROM voucher");
-        // Format harga setiap voucher sebelum dikirim ke EJS
-        const formattedVouchers = voucher.map((v) => {
-            return Object.assign(Object.assign({}, v), { formattedPrice: formatRupiah(v.price) });
-        });
-        // Render halaman dengan data voucher yang sudah diformat
+        const [voucher] = yield db_1.default.query(`SELECT * FROM voucher ORDER BY createdAt DESC LIMIT ? OFFSET ?`, [limit, offset]);
+        const formattedVouchers = voucher.map((v) => (Object.assign(Object.assign({}, v), { formattedPrice: formatRupiah(v.price) })));
+        const [totalResult] = yield db_1.default.query(`SELECT COUNT(*) AS totalVouchers FROM voucher`);
+        const totalVouchers = ((_a = totalResult[0]) === null || _a === void 0 ? void 0 : _a.totalVouchers) || 0;
+        const totalPages = Math.ceil(totalVouchers / limit);
         res.render("adminv2/pages/voucher/index", {
             voucher: formattedVouchers,
             alert,
-            name: (_a = req.session.user) === null || _a === void 0 ? void 0 : _a.name,
-            email: (_b = req.session.user) === null || _b === void 0 ? void 0 : _b.email,
+            name: (_b = req.session.user) === null || _b === void 0 ? void 0 : _b.name,
+            email: (_c = req.session.user) === null || _c === void 0 ? void 0 : _c.email,
             title: "Halaman voucher",
+            currentPage: page,
+            totalPages,
         });
     }
     catch (err) {
-        // Jika terjadi kesalahan, redirect ke halaman voucher
         req.flash("alertMessage", `${err.message}`);
         req.flash("alertStatus", "danger");
         res.redirect("/admin/voucher");
