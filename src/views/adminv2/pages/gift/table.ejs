@@ -13,6 +13,7 @@
         </ol>
       </nav>
     </div>
+    <%- include ('../../components/messages.ejs')%>
     <div class="row">
       <div class="card">
         <div class="card-body">
@@ -52,7 +53,7 @@
                     />
                   </td>
                   <td><%= gift[i].giftName %></td>
-                  <td><%= parseFloat(gift[i].price).toFixed(2) %></td>
+                  <td><%= gift[i].price %></td>
                   <td>
                     <form
                       action="/admin/gift/delete/<%= gift[i].id %>?_method=DELETE"

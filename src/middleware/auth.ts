@@ -83,3 +83,17 @@ export const isLoginUser = async (
     res.status(500).json({ message: "Error processing authentication", error });
   }
 };
+
+// export const formatRupiah = (angka: number) => {
+//   return 'Rp ' + angka.toLocaleString('id-ID', {
+//     style: 'currency',
+//     currency: 'IDR',
+//     minimumFractionDigits: 2,
+//     maximumFractionDigits: 2,
+//   }).replace('Rp', '').trim();
+// };
+export const formatRupiah = (angka: number) => {
+  return 'Rp ' + angka.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,').replace('.', ',');
+};
+
+

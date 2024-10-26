@@ -2,6 +2,7 @@ import pool from "../../../../db";
 import { Request, Response } from "express";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { format } from "path";
+import { formatRupiah } from "../../../middleware/auth";
 
 const formatDate = (date: Date) => {
   const yyyy = date.getFullYear();
@@ -22,7 +23,6 @@ interface voucher extends RowDataPacket {
 
 export const index = async (req: Request, res: Response) => {
   try {
-    const formatRupiah = (angka: number) => 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
     const page = parseInt(req.query.page as string) || 1;
     const limit = 15;

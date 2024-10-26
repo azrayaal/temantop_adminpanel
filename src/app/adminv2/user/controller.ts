@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import https from "https";
 import axios from "axios";
 import { randomString } from "../agent/controller";
+import { formatRupiah } from "../../../middleware/auth";
 
 interface User extends RowDataPacket {
   id: number;
@@ -31,12 +32,18 @@ export const index = async (req: Request, res: Response) => {
       rejectUnauthorized: false, // Abaikan verifikasi SSL (jika perlu)
     });
 
+    const userFormatted = users.map((user: any) => {
+      return {
+        ...user,
+        balance: formatRupiah(user.balance),
+      };
+    });
 
     // Render halaman dengan user yang sudah di-update balance-nya
     res.render("adminv2/pages/user/index", {
       name: req.session.user?.username,
       email: req.session.user?.email,
-      user: users, // Kirimkan data user dengan balance yang diperbarui
+      user: userFormatted, // Kirimkan data user dengan balance yang diperbarui
       alert,
       title: "User page - Yong",
     });

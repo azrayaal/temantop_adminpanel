@@ -1,6 +1,7 @@
 import pool from "../../../../db";
 import { Request, Response } from "express";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
+import { formatRupiah } from "../../../middleware/auth";
 
 interface Gift extends RowDataPacket {
   id: number;
@@ -18,10 +19,18 @@ export const index = async (req: Request, res: Response) => {
     const alertStatus = req.flash("alertStatus");
 
     const alert = { message: alertMessage, status: alertStatus };
-    const [gift] = await pool.query("SELECT * FROM gift");
+    const [gift] = await pool.query<Gift[]>("SELECT * FROM gift");
     // Render halaman dengan data gift
+    const giftFormatted = gift.map((gift: Gift) => {
+      return {
+        ...gift,
+        price: formatRupiah(gift.price),
+      };
+    })
+
+    console.log(giftFormatted);
     res.render("adminv2/pages/gift/index", {
-      gift,
+      gift: giftFormatted,
       alert,
       name: req.session.user?.name,
       email: req.session.user?.email,

@@ -67,7 +67,7 @@
                     <td><%= transaction.transactionId %></td>
                     <td><%= transaction.player_id %></td>
                     <td><%= transaction.userName %></td>
-                    <td><%= parseFloat(transaction.amount).toFixed(2) %></td>
+                    <td><%= transaction.amount %></td>
                     <td><%= transaction.description %></td>
                     <td><%= new Date(transaction.createdAt).toLocaleString() %></td>
                   </tr>

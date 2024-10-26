@@ -2,6 +2,7 @@ import pool from "../../../../db";
 import { Request, Response } from "express";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import bcrypt from "bcryptjs";
+import { formatRupiah } from "../../../middleware/auth";
 interface Agent extends RowDataPacket {
   id: number;
   name: string;
@@ -16,10 +17,13 @@ export const index = async (req: Request, res: Response) => {
     const alertMessage = req.flash("alertMessage");
     const alertStatus = req.flash("alertStatus");
     const alert = { message: alertMessage, status: alertStatus };
-    const [agent] = await pool.query("SELECT * FROM user where stream = 1");
+    const [agent] = await pool.query<Agent[]>("SELECT * FROM user where stream = 1");
     // Render halaman dengan data agent
+    const formattedAgent = agent.map((agent: any) => {
+      return { ...agent, balance: formatRupiah(agent.balance) };
+    })
     res.render("adminv2/pages/agent/index", {
-      agent,
+      agent: formattedAgent,
       alert,
       name: req.session.user?.name,
       email: req.session.user?.email,
