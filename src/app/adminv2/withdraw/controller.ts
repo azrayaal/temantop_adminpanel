@@ -75,14 +75,15 @@ export const indexDetail = async (req: Request, res: Response) => {
     const formattedWithdraw = withdrawWithDetails.map((withdraw: any) => {
       return {
         ...withdraw,
-        formattedAmount: formatRupiah(withdraw.amount),
+        formattedAmount: formatRupiah(parseFloat(withdraw.amount)),
       };
     });
 
+    console.log(formattedWithdraw)
     
     res.render("adminv2/pages/withdraw/detail", {
       alert,
-      withdraw: formattedWithdraw,
+      withdraw: formattedWithdraw[0],
       name: req.session.user?.name,
       email: req.session.user?.email,
       title: "Halaman withdraw",

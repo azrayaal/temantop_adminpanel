@@ -22,6 +22,9 @@ export const index = async (req: Request, res: Response) => {
     const [transactionRows] = await pool.query<RowDataPacket[]>(
       "SELECT COUNT(*) AS count FROM transaction"
     );
+    const [withdrawRows] = await pool.query<RowDataPacket[]>(
+      "SELECT COUNT(*) AS count FROM withdraw"
+    );
 
     res.render("adminv2/index", {
       name: req.session.user?.username,
@@ -34,6 +37,7 @@ export const index = async (req: Request, res: Response) => {
         voucher: voucherRows[0].count,
         bank: bankRows[0].count,
         transaction: transactionRows[0].count,
+        withdraw: withdrawRows[0].count,
       },
     });
   } catch (err: any) {
