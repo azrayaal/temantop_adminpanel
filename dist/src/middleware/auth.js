@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.isLoginUser = exports.isLoginAdmin = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const db_1 = __importDefault(require("../../db"));
-const JWT_SECRET = "your_secret_key_here";
+const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key_here";
 const isLoginAdmin = (req, res, next) => {
     if (!req.session.admin) {
         req.flash("alertMessage", "Sorry you are not authorized to access this page");
@@ -43,8 +43,8 @@ const isLoginUser = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         }
         jsonwebtoken_1.default.verify(token, JWT_SECRET, (err, decoded) => __awaiter(void 0, void 0, void 0, function* () {
             if (err) {
+                console.log("JWT verification error:", err); // Tambahkan ini untuk melihat error
                 if (err.name === "TokenExpiredError") {
-                    // Jika token expired, logout user secara otomatis
                     yield db_1.default.query("UPDATE user SET online = 0, jwt_token = NULL, is_logged_in = false WHERE id = ?", [decoded.userId]);
                     return res.status(401).json({
                         message: "Unauthorized: Token has expired. Please log in again.",
@@ -56,7 +56,7 @@ const isLoginUser = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                         .json({ message: "Unauthorized: Invalid token" });
                 }
             }
-            req.user = decoded.userData; // Assign token data ke request
+            req.user = decoded.userData;
             next();
         }));
     }

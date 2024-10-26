@@ -54,7 +54,6 @@ export const getSessionTransactions = async (req: Request, res: Response) => {
     });
   }
 };
-
 export const createSessionTransaction = async (req: Request, res: Response) => {
   try {
     const { amount, stream_sessionId } = req.body;
@@ -103,17 +102,17 @@ export const createSessionTransaction = async (req: Request, res: Response) => {
 
     // Jika saldo mencukupi, buat transaksi baru di tabel session_transaction
     const [result]: [ResultSetHeader, any] = await pool.query(
-      "INSERT INTO session_transaction (userId, amount, stream_sessionId, paid) VALUES (?, ?, ?, ?)",
-      [userId, amount, stream_sessionId, 1]
+      "INSERT INTO session_transaction (userId, amount, stream_sessionId, paid, description) VALUES (?, ?, ?, ?)",
+      [userId, amount, stream_sessionId, 1, "Paid for stream session"]
     );
     
     // update table transaction
-    const resultId = result.insertId
+    const resultId = result.insertId;
 
     await pool.query(
-      "INSERT INTO transaction (userId, transactionType, transactionId) VALUES (?, ?, ?, ?, ?)",
-      [userId,"session_transaction", resultId]
-    )
+      "INSERT INTO transaction (userId, transactionType, transactionId) VALUES (?, ?, ?)",
+      [userId, "session_transaction", resultId]
+    );
 
     // Jika tidak ada baris yang terpengaruh, artinya insert gagal
     if (result.affectedRows === 0) {
