@@ -70,8 +70,8 @@
                 </thead>
                 <tbody>
                   <tr>
-                    <td id="totalSpend">Rp. <%= totalSpend %></td>
-                    <td id="totalIncome">Rp. <%= totalIncome %></td>
+                    <td id="totalSpend"><%= totalSpend %></td>
+                    <td id="totalIncome"><%= totalIncome %></td>
                   </tr>
                 </tbody>
               </table>
@@ -87,7 +87,6 @@
                   <tr>
                     <th>No</th>
                     <th>Gift Name</th>
-                    <th>Bet Id</th>
                     <th>Amount Spend</th>
                     <th>Amount Income</th>
                     <th>Description</th>
@@ -101,12 +100,11 @@
                   <tr>
                     <td><%= (currentPage - 1) * 10 + index + 1 %></td>
                     <td><%= transaction.giftName %></td>
-                    <td><%= transaction.bet_id %></td>
                     <td class="amount-cell">
-                      <%= transaction.amountSpend || 0 %>
+                      <%= transaction.amountSpend %>
                     </td>
                     <td class="amount-cell">
-                      <%= transaction.amountIncome || 0 %>
+                      <%= transaction.amountIncome %>
                     </td>
                     <td><%= transaction.description %></td>
                     <td>

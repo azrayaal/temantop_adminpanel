@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.actionEdit = exports.indexEdit = exports.actionDelete = exports.actionCreate = exports.indexCreate = exports.index = void 0;
 const db_1 = __importDefault(require("../../../../db"));
+const auth_1 = require("../../../middleware/auth");
 const index = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {
@@ -23,8 +24,12 @@ const index = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const alert = { message: alertMessage, status: alertStatus };
         const [gift] = yield db_1.default.query("SELECT * FROM gift");
         // Render halaman dengan data gift
+        const giftFormatted = gift.map((gift) => {
+            return Object.assign(Object.assign({}, gift), { price: (0, auth_1.formatRupiah)(gift.price) });
+        });
+        console.log(giftFormatted);
         res.render("adminv2/pages/gift/index", {
-            gift,
+            gift: giftFormatted,
             alert,
             name: (_a = req.session.user) === null || _a === void 0 ? void 0 : _a.name,
             email: (_b = req.session.user) === null || _b === void 0 ? void 0 : _b.email,

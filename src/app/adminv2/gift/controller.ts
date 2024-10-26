@@ -21,10 +21,10 @@ export const index = async (req: Request, res: Response) => {
     const alert = { message: alertMessage, status: alertStatus };
     const [gift] = await pool.query<Gift[]>("SELECT * FROM gift");
     // Render halaman dengan data gift
-    const giftFormatted = gift.map((gift: Gift) => {
+    const giftFormatted = gift.map((gift: any) => {
       return {
         ...gift,
-        price: formatRupiah(gift.price),
+        price: formatRupiah(parseFloat(gift.price)),
       };
     })
 
@@ -38,6 +38,7 @@ export const index = async (req: Request, res: Response) => {
     });
   } catch (err: any) {
     // Jika terjadi kesalahan, redirect ke halaman gift
+    console.error("Error in index route:", err.message || err);
     req.flash("alertMessage", `${err.message}`);
     req.flash("alertStatus", "danger");
     res.redirect("/admin/gift");

@@ -14,31 +14,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getTransactionDetail = exports.getTransactions = void 0;
 const db_1 = __importDefault(require("../../../../db"));
-// Fungsi untuk mendapatkan total pemasukan dari User A
-const getTotalIncomeFromUserA = (userIdA) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const [rows] = yield db_1.default.query(`SELECT SUM(amount) AS totalIncome
-     FROM gift_transaction
-     WHERE receivedId = ?`, [userIdA]);
-    return ((_a = rows[0]) === null || _a === void 0 ? void 0 : _a.totalIncome) || 0;
-});
-// Fungsi untuk mendapatkan total pengeluaran dari User B
-const getTotalExpensesFromUserB = (userIdB) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const [rows] = yield db_1.default.query(`SELECT SUM(amount) AS totalExpenses
-     FROM gift_transaction
-     WHERE userId = ?`, [userIdB]);
-    return ((_a = rows[0]) === null || _a === void 0 ? void 0 : _a.totalExpenses) || 0;
-});
+const auth_1 = require("../../../middleware/auth");
 // Controller for fetching paginated transactions
 const getTransactions = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d;
+    var _a, _b, _c;
     try {
         // Pagination variables
         const page = parseInt(req.query.page) || 1;
         const limit = 15;
         const offset = (page - 1) * limit;
-        // Query to fetch transactions with user and gift details, ordered by latest
+        // Query to fetch transactions with user details and relevant amount, description based on transactionType
         const [transactions] = yield db_1.default.query(`SELECT 
         t.id AS transactionId,
         t.userId,
@@ -46,26 +31,23 @@ const getTransactions = (req, res) => __awaiter(void 0, void 0, void 0, function
         u.player_id AS player_id,
         t.transactionType,
         t.transactionId AS relatedTransactionId,
-        gt.giftName,
-        gt.amount,
-        gt.description,
+        COALESCE(gt.amount, st.amount, wt.amount, tt.amount) AS amount,
+        COALESCE(gt.description, st.description, wt.description, tt.description) AS description,
         t.createdAt
       FROM transaction t
       LEFT JOIN user u ON t.userId = u.id
       LEFT JOIN gift_transaction gt ON t.transactionType = 'gift_transaction' AND t.transactionId = gt.id
+      LEFT JOIN session_transaction st ON t.transactionType = 'session_transaction' AND t.transactionId = st.id
+      LEFT JOIN withdraw_transaction wt ON t.transactionType = 'withdraw_transaction' AND t.transactionId = wt.id
+      LEFT JOIN topup_transaction tt ON t.transactionType = 'topup_transaction' AND t.transactionId = tt.id
       ORDER BY t.createdAt DESC
       LIMIT ? OFFSET ?`, [limit, offset]);
         // Calculate the total number of transactions
         const [totalResult] = yield db_1.default.query(`SELECT COUNT(*) AS totalTransactions FROM transaction`);
         const totalTransactions = ((_a = totalResult[0]) === null || _a === void 0 ? void 0 : _a.totalTransactions) || 0;
-        // Calculate the total amount from gift transactions
-        const [totalAmountResult] = yield db_1.default.query(`SELECT SUM(gt.amount) AS totalAmount 
-       FROM transaction t
-       LEFT JOIN gift_transaction gt ON t.transactionType = 'gift_transaction' AND t.transactionId = gt.id`);
-        const totalAmount = ((_b = totalAmountResult[0]) === null || _b === void 0 ? void 0 : _b.totalAmount) || 0;
         // Calculate total pages
         const totalPages = Math.ceil(totalTransactions / limit);
-        // Map over transactions to adjust the transactionType
+        // Map over transactions to adjust the transactionType label
         const formattedTransactions = transactions.map((transaction) => {
             let transactionTypeLabel;
             switch (transaction.transactionType) {
@@ -84,15 +66,16 @@ const getTransactions = (req, res) => __awaiter(void 0, void 0, void 0, function
                 default:
                     transactionTypeLabel = "Unknown";
             }
-            return Object.assign(Object.assign({}, transaction), { transactionType: transactionTypeLabel });
+            return Object.assign(Object.assign({}, transaction), { transactionType: transactionTypeLabel, amount: (0, auth_1.formatRupiah)(parseFloat(transaction.amount)) });
         });
+        console.log(transactions);
+        console.log(formattedTransactions);
         // Render the transactions page with retrieved data
         res.render("adminv2/pages/transaction/index", {
-            name: ((_c = req.session.user) === null || _c === void 0 ? void 0 : _c.name) || "Admin",
-            email: ((_d = req.session.user) === null || _d === void 0 ? void 0 : _d.email) || "admin@example.com",
+            name: ((_b = req.session.user) === null || _b === void 0 ? void 0 : _b.name) || "Admin",
+            email: ((_c = req.session.user) === null || _c === void 0 ? void 0 : _c.email) || "admin@example.com",
             title: "Transactions",
             transactions: formattedTransactions,
-            totalAmount,
             currentPage: page,
             totalPages,
         });
@@ -131,9 +114,6 @@ LEFT JOIN withdraw_transaction wt ON t.transactionType = 'withdraw_transaction' 
 LEFT JOIN topup_transaction tt ON t.transactionType = 'topup_transaction' AND t.transactionId = tt.id
 WHERE t.id = ?;
 `, [id]);
-        const formatRupiah = (angka) => {
-            return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-        };
         // if (transactionBase.length === 0) {
         //   return res.status(404).render("adminv2/pages/transaction/notfound", {
         //     message: "Transaction not found",
@@ -169,7 +149,7 @@ WHERE t.id = ?;
             name: ((_a = req.session.user) === null || _a === void 0 ? void 0 : _a.name) || "Admin",
             email: ((_b = req.session.user) === null || _b === void 0 ? void 0 : _b.email) || "admin@example.com",
             title: "Transaction Details",
-            transaction: Object.assign(Object.assign(Object.assign({}, transaction), transactionDetail), { amount: formatRupiah(transaction.amount) }),
+            transaction: Object.assign(Object.assign(Object.assign({}, transaction), transactionDetail), { amount: (0, auth_1.formatRupiah)(transaction.amount) }),
         });
     }
     catch (error) {

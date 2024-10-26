@@ -35,7 +35,7 @@ export const index = async (req: Request, res: Response) => {
     const userFormatted = users.map((user: any) => {
       return {
         ...user,
-        balance: formatRupiah(user.balance),
+        balance: formatRupiah(parseFloat(user.balance)),
       };
     });
 
@@ -298,7 +298,6 @@ export const getUserTransactions = async (req: Request, res: Response) => {
       receivedId,
         giftName, 
         amount, 
-        bet_id, 
         description, 
         createdAt 
       FROM gift_transaction 
@@ -308,15 +307,19 @@ export const getUserTransactions = async (req: Request, res: Response) => {
       [id, id, limit, offset]
     );
 
-    const totalIncome = totalIncomeRows[0].totalIncome || 0;
-    const totalSpend = totalSpendRows[0].totalSpend || 0;
+    const totalIncome = totalIncomeRows[0].totalIncome
+    ? formatRupiah(parseFloat(totalIncomeRows[0].totalIncome))
+    : 'Rp 0,00';
+    const totalSpend =  totalSpendRows[0]?.totalSpend
+    ? formatRupiah(parseFloat(totalSpendRows[0].totalSpend))
+    : 'Rp 0,00';
     const totalPages = Math.ceil(totalTransactions / limit);
 
     const transactionsWithAmounts = transactionRows.map((transaction) => {
       const amount = transaction.amount;
       // Inisialisasi amountSpend dan amountIncome
-      let amountSpend = 0;
-      let amountIncome = 0;
+      let amountSpend = '0';
+      let amountIncome = '0';
 
       if (transaction.userId === parseInt(id)) {
         // Jika userId sama dengan id, maka ini adalah pengeluaran
@@ -326,10 +329,20 @@ export const getUserTransactions = async (req: Request, res: Response) => {
         amountIncome = amount || 0; // Jika amount tidak ada, set ke 0
       }
 
+      console.log(amountIncome)
+      console.log(amountSpend)
+      console.log(amount)
+      console.log('0')
       return {
         ...transaction,
+        // amountSpend: amountSpend
+        // ? formatRupiah(parseFloat(amountSpend))
+        // : 'Rp 0,00',
+        // amountIncome: amountIncome
+        // ? formatRupiah(parseFloat(amountIncome))
+        // : 'Rp 0,00',
         amountSpend,
-        amountIncome,
+        amountIncome
       };
     });
     // Log transactions with amounts for debugging

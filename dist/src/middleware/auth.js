@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isLoginUser = exports.isLoginAdmin = void 0;
+exports.formatRupiah = exports.isLoginUser = exports.isLoginAdmin = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const db_1 = __importDefault(require("../../db"));
 const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key_here";
@@ -65,3 +65,15 @@ const isLoginUser = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.isLoginUser = isLoginUser;
+// export const formatRupiah = (angka: number) => {
+//   return 'Rp ' + angka.toLocaleString('id-ID', {
+//     style: 'currency',
+//     currency: 'IDR',
+//     minimumFractionDigits: 2,
+//     maximumFractionDigits: 2,
+//   }).replace('Rp', '').trim();
+// };
+const formatRupiah = (angka) => {
+    return 'Rp ' + angka.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,').replace('.', ',');
+};
+exports.formatRupiah = formatRupiah;

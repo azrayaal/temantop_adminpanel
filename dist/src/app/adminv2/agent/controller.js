@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUserLiveStreamReport = exports.changeStatusStream = exports.changeStatus = exports.actionEdit = exports.indexEdit = exports.actionDelete = exports.actionCreate = exports.randomString = exports.indexCreate = exports.index = void 0;
 const db_1 = __importDefault(require("../../../../db"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const auth_1 = require("../../../middleware/auth");
 const index = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {
@@ -24,8 +25,11 @@ const index = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const alert = { message: alertMessage, status: alertStatus };
         const [agent] = yield db_1.default.query("SELECT * FROM user where stream = 1");
         // Render halaman dengan data agent
+        const formattedAgent = agent.map((agent) => {
+            return Object.assign(Object.assign({}, agent), { balance: (0, auth_1.formatRupiah)(agent.balance) });
+        });
         res.render("adminv2/pages/agent/index", {
-            agent,
+            agent: formattedAgent,
             alert,
             name: (_a = req.session.user) === null || _a === void 0 ? void 0 : _a.name,
             email: (_b = req.session.user) === null || _b === void 0 ? void 0 : _b.email,

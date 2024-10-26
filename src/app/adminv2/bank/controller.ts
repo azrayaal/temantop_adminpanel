@@ -6,7 +6,11 @@ import { ResultSetHeader, RowDataPacket } from "mysql2";
 export const index = async (req: Request, res: Response) => {
  try {
   const [Bank] = await pool.query("SELECT * FROM bank");
+  const alertMessage = req.flash("alertMessage");
+  const alertStatus = req.flash("alertStatus");
+  const alert = { message: alertMessage, status: alertStatus };
   res.render("adminv2/pages/bank/index", {
+    alert,
    name: req.session.user?.name,
    email: req.session.user?.email,
    Bank,

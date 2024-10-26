@@ -20,7 +20,7 @@ export const index = async (req: Request, res: Response) => {
     const [agent] = await pool.query<Agent[]>("SELECT * FROM user where stream = 1");
     // Render halaman dengan data agent
     const formattedAgent = agent.map((agent: any) => {
-      return { ...agent, balance: formatRupiah(agent.balance) };
+      return { ...agent, balance: formatRupiah(parseFloat(agent.balance)) };
     })
     res.render("adminv2/pages/agent/index", {
       agent: formattedAgent,
@@ -32,6 +32,7 @@ export const index = async (req: Request, res: Response) => {
     });
   } catch (err: any) {
     // Jika terjadi kesalahan, redirect ke halaman agent
+    console.error("Error in index route:", err.message || err);
     req.flash("alertMessage", `${err.message}`);
     req.flash("alertStatus", "danger");
     res.redirect("/admin/");

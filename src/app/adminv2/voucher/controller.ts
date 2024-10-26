@@ -1,7 +1,7 @@
 import pool from "../../../../db";
 import { Request, Response } from "express";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
-import { format } from "path";
+import { format, parse } from "path";
 import { formatRupiah } from "../../../middleware/auth";
 
 const formatDate = (date: Date) => {
@@ -39,7 +39,7 @@ export const index = async (req: Request, res: Response) => {
 
     const formattedVouchers = voucher.map((v: any) => ({
       ...v,
-      formattedPrice: formatRupiah(v.price),
+      formattedPrice: formatRupiah(parseFloat(v.price)),
     }));
 
     const [totalResult] = await pool.query<RowDataPacket[]>(`SELECT COUNT(*) AS totalVouchers FROM voucher`);
@@ -56,6 +56,7 @@ export const index = async (req: Request, res: Response) => {
       totalPages,
     });
   } catch (err: any) {
+    console.error("Error in index route:", err.message || err);
     req.flash("alertMessage", `${err.message}`);
     req.flash("alertStatus", "danger");
     res.redirect("/admin/voucher");

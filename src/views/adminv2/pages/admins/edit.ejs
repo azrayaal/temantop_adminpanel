@@ -69,77 +69,8 @@
                     </div>
 
                     <!-- Profile Picture -->
-                    <div class="form-group">
-                      <label for="profilePicture">Profile Picture</label>
-                      <input
-                        type="file"
-                        name="profilePicture"
-                        class="form-control-file"
-                        id="profilePicture"
-                        accept="image/*"
-                        onchange="previewImage(event)"
-                      />
-                      <!-- Input hidden untuk menyimpan gambar sebelumnya -->
-                      <input
-                        type="hidden"
-                        name="previousProfilePicture"
-                        value="<%= admin.profilePicture %>"
-                      />
-                    </div>
 
                     <!-- Gambar Before dan After -->
-                    <div
-                      style="
-                        display: flex;
-                        align-items: center;
-                        margin-bottom: 20px;
-                      "
-                    >
-                      <div style="text-align: center; margin-right: 20px">
-                        <p style="margin-bottom: 10px">
-                          Current Profile Picture:
-                        </p>
-                        <% if (admin.profilePicture &&
-                        admin.profilePicture.startsWith('http')) { %>
-                        <img
-                          src="<%= admin.profilePicture %>"
-                          alt="Profile Picture"
-                          class="img-thumbnail"
-                          style="
-                            width: 100px;
-                            height: 100px;
-                            border-radius: 100%;
-                          "
-                        />
-                        <% } else if (admin.profilePicture) { %>
-                        <img
-                          src="/uploads/<%= admin.profilePicture %>"
-                          alt="Profile Picture"
-                          class="img-thumbnail"
-                          style="
-                            width: 100px;
-                            height: 100px;
-                            border-radius: 100%;
-                          "
-                        />
-                        <% } %>
-                      </div>
-                      <div style="text-align: center">
-                        <p style="margin-bottom: 10px">New Profile Picture:</p>
-                        <img
-                          id="profile-preview"
-                          src=""
-                          alt="Profile Preview"
-                          style="
-                            display: none;
-                            border-radius: 100%;
-                            width: 100px;
-                            height: 100px;
-                          "
-                          class="img-thumbnail"
-                        />
-                      </div>
-                    </div>
 
                     <!-- Password -->
                     <div class="form-group">

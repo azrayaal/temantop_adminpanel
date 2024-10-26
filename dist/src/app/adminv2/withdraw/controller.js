@@ -14,23 +14,41 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.actionAccept = exports.actionReject = exports.indexDetail = exports.index = void 0;
 const db_1 = __importDefault(require("../../../../db"));
+const auth_1 = require("../../../middleware/auth");
 const index = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _a, _b, _c;
     try {
         const alertMessage = req.flash("alertMessage");
         const alertStatus = req.flash("alertStatus");
         const alert = { message: alertMessage, status: alertStatus };
-        // Fetch data with JOIN to get bank names directly
+        // Pagination variables
+        const page = parseInt(req.query.page) || 1; // Current page
+        const limit = 15; // Number of records per page
+        const offset = (page - 1) * limit; // Calculate offset
+        // Fetch paginated data with JOIN to get bank names directly
         const [withdrawWithDetails] = yield db_1.default.query(`SELECT w.*, b.name AS bank_name, u.username AS username, u.player_id AS player_id
-   FROM withdraw w
-   LEFT JOIN bank b ON w.bankId = b.id
-   LEFT JOIN user u ON w.userId = u.id`);
+       FROM withdraw w
+       LEFT JOIN bank b ON w.bankId = b.id
+       LEFT JOIN user u ON w.userId = u.id
+       ORDER BY w.createdAt DESC
+       LIMIT ? OFFSET ?`, [limit, offset]);
+        // Fetch total record count to calculate total pages
+        const [totalResult] = yield db_1.default.query(`SELECT COUNT(*) AS totalWithdrawals FROM withdraw`);
+        const totalWithdrawals = ((_a = totalResult[0]) === null || _a === void 0 ? void 0 : _a.totalWithdrawals) || 0;
+        const totalPages = Math.ceil(totalWithdrawals / limit);
+        // Format amounts
+        const withdrawFormatted = withdrawWithDetails.map((withdraw) => {
+            return Object.assign(Object.assign({}, withdraw), { formattedAmount: (0, auth_1.formatRupiah)(withdraw.amount) });
+        });
+        // Render view with pagination data
         res.render("adminv2/pages/withdraw/index", {
             alert,
-            withdraw: withdrawWithDetails,
-            name: (_a = req.session.user) === null || _a === void 0 ? void 0 : _a.name,
-            email: (_b = req.session.user) === null || _b === void 0 ? void 0 : _b.email,
+            withdraw: withdrawFormatted,
+            name: (_b = req.session.user) === null || _b === void 0 ? void 0 : _b.name,
+            email: (_c = req.session.user) === null || _c === void 0 ? void 0 : _c.email,
             title: "Halaman withdraw",
+            currentPage: page,
+            totalPages,
         });
     }
     catch (err) {
@@ -52,10 +70,12 @@ const indexDetail = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
    LEFT JOIN bank b ON w.bankId = b.id
    LEFT JOIN user u ON w.userId = u.id
    WHERE w.id = ?`, [req.params.id]);
-        console.log(withdrawWithDetails); // Check output for debugging
+        const formattedWithdraw = withdrawWithDetails.map((withdraw) => {
+            return Object.assign(Object.assign({}, withdraw), { formattedAmount: (0, auth_1.formatRupiah)(withdraw.amount) });
+        });
         res.render("adminv2/pages/withdraw/detail", {
             alert,
-            withdraw: withdrawWithDetails[0],
+            withdraw: formattedWithdraw,
             name: (_a = req.session.user) === null || _a === void 0 ? void 0 : _a.name,
             email: (_b = req.session.user) === null || _b === void 0 ? void 0 : _b.email,
             title: "Halaman withdraw",
@@ -81,6 +101,13 @@ const actionReject = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         }
         const [result] = yield db_1.default.query("UPDATE withdraw SET status = 'rejected' WHERE id = ?", [id]);
         if (result.affectedRows === 1) {
+            // Insert a rejection notification
+            yield db_1.default.query("INSERT INTO notification (userId, title, message, status) VALUES (?, ?, ?, ?)", [
+                dataWithdraw[0].userId,
+                "Withdrawal Rejected",
+                `Your withdrawal request of Rp ${dataWithdraw[0].amount} has been rejected.`,
+                "failed",
+            ]);
             req.flash("alertMessage", "Withdrawal rejected successfully.");
             req.flash("alertStatus", "success");
         }
@@ -109,9 +136,17 @@ const actionAccept = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         }
         // Approve the withdrawal
         const [result] = yield db_1.default.query("UPDATE withdraw SET status = 'approved' WHERE id = ?", [id]);
-        // Update the user's balance
+        // Only proceed if the withdrawal status was successfully updated
         if (result.affectedRows === 1) {
+            // Update the user's balance
             yield db_1.default.query("UPDATE user SET balance = balance - ? WHERE id = ?", [dataWithdraw[0].amount, dataWithdraw[0].userId]);
+            // Insert a success notification
+            yield db_1.default.query("INSERT INTO notification (userId, title, message, status) VALUES (?, ?, ?, ?)", [
+                dataWithdraw[0].userId,
+                "Withdrawal Approved",
+                `Your withdrawal of Rp ${dataWithdraw[0].amount} has been successfully approved.`,
+                "success",
+            ]);
             req.flash("alertMessage", "Withdrawal approved successfully.");
             req.flash("alertStatus", "success");
         }

@@ -17,6 +17,7 @@ const db_1 = __importDefault(require("../../../../db"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const https_1 = __importDefault(require("https"));
 const controller_1 = require("../agent/controller");
+const auth_1 = require("../../../middleware/auth");
 const index = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {
@@ -30,11 +31,14 @@ const index = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const agent = new https_1.default.Agent({
             rejectUnauthorized: false, // Abaikan verifikasi SSL (jika perlu)
         });
+        const userFormatted = users.map((user) => {
+            return Object.assign(Object.assign({}, user), { balance: (0, auth_1.formatRupiah)(user.balance) });
+        });
         // Render halaman dengan user yang sudah di-update balance-nya
         res.render("adminv2/pages/user/index", {
             name: (_a = req.session.user) === null || _a === void 0 ? void 0 : _a.username,
             email: (_b = req.session.user) === null || _b === void 0 ? void 0 : _b.email,
-            user: users, // Kirimkan data user dengan balance yang diperbarui
+            user: userFormatted, // Kirimkan data user dengan balance yang diperbarui
             alert,
             title: "User page - Yong",
         });

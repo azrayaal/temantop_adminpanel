@@ -21,7 +21,7 @@ export const index = async (req: Request, res: Response) => {
        FROM withdraw w
        LEFT JOIN bank b ON w.bankId = b.id
        LEFT JOIN user u ON w.userId = u.id
-       ORDER BY w.createdAt DESC
+       ORDER BY w.id DESC
        LIMIT ? OFFSET ?`, [limit, offset]
     );
 
@@ -35,7 +35,7 @@ export const index = async (req: Request, res: Response) => {
     const withdrawFormatted = withdrawWithDetails.map((withdraw: any) => {
       return {
         ...withdraw,
-        formattedAmount: formatRupiah(withdraw.amount),
+        amount: formatRupiah(parseFloat(withdraw.amount)),
       };
     });
     // Render view with pagination data
@@ -49,6 +49,7 @@ export const index = async (req: Request, res: Response) => {
       totalPages,
     });
   } catch (err: any) {
+    console.error("Error in index route:", err.message || err);
     req.flash("alertMessage", `${err.message}`);
     req.flash("alertStatus", "danger");
     res.redirect("/admin/withdraw");

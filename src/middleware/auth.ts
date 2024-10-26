@@ -92,8 +92,13 @@ export const isLoginUser = async (
 //     maximumFractionDigits: 2,
 //   }).replace('Rp', '').trim();
 // };
-export const formatRupiah = (angka: number) => {
-  return 'Rp ' + angka.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,').replace('.', ',');
+export const formatRupiah = (angka: number | string) => {
+  const value = typeof angka === 'number' ? angka : parseFloat(angka);
+  return isNaN(value)
+    ? 'Rp 0,00'
+    : 'Rp ' + value.toLocaleString('id-ID', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
 };
-
 
