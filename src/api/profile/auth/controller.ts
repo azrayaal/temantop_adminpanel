@@ -359,7 +359,7 @@ export const login = async (req: Request, res: Response) => {
 
   try {
     // Cari user berdasarkan email
-    const [rows]: any = await pool.query("SELECT * FROM user WHERE email = ?", [
+    const [rows]: any = await pool.query("SELECT * FROM user WHERE email = ? AND STREAM = 0", [
       email,
     ]);
 

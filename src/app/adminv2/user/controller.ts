@@ -247,6 +247,117 @@ export const changeStatus = async (req: Request, res: Response) => {
   }
 };
 
+// export const getUserTransactions = async (req: Request, res: Response) => {
+//   const { id } = req.params;
+//   const page = parseInt(req.query.page as string) || 1;
+//   const limit = 10;
+//   const offset = (page - 1) * limit;
+
+//   try {
+//     // Fetch user information (name)
+//     const [userRows] = await pool.query<RowDataPacket[]>(
+//       `SELECT username, player_id FROM user WHERE id = ?`,
+//       [id]
+//     );
+
+//     if (userRows.length === 0) {
+//       return res.status(404).send("User not found");
+//     }
+
+//     const username = userRows[0].username;
+//     const player_id = userRows[0].player_id;
+
+//     // Fetch total income and total spend
+//     const [totalIncomeRows] = await pool.query<RowDataPacket[]>(
+//       `SELECT 
+//         SUM(amount) AS totalIncome 
+//       FROM gift_transaction 
+//       WHERE receivedId = ?`,
+//       [id]
+//     );
+
+//     const [totalSpendRows] = await pool.query<RowDataPacket[]>(
+//       `SELECT 
+//         SUM(amount) AS totalSpend 
+//       FROM gift_transaction 
+//       WHERE userId = ?`,
+//       [id]
+//     );
+
+//     console.log(totalSpendRows)
+
+//     // Get transaction count for pagination
+//     const [countRows] = await pool.query<RowDataPacket[]>(
+//       `SELECT COUNT(*) AS total FROM gift_transaction WHERE userId = ? OR receivedId = ?`,
+//       [id, id]
+//     );
+//     const totalTransactions = countRows[0].total;
+
+//     // Fetch 10 latest transactions based on page
+//     const [transactionRows] = await pool.query<RowDataPacket[]>(
+//       `SELECT 
+//       userId,
+//       receivedId,
+//         giftName, 
+//         amount, 
+//         description, 
+//         createdAt 
+//       FROM gift_transaction 
+//       WHERE userId = ? OR receivedId = ? 
+//       ORDER BY createdAt DESC 
+//       LIMIT ? OFFSET ?`,
+//       [id, id, limit, offset]
+//     );
+
+//     const totalIncome = totalIncomeRows[0].totalIncome
+//     ? formatRupiah(parseFloat(totalIncomeRows[0].totalIncome))
+//     : 'Rp 0,00';
+//     const totalSpend =  totalSpendRows[0]?.totalSpend
+//     ? formatRupiah(parseFloat(totalSpendRows[0].totalSpend))
+//     : 'Rp 0,00';
+//     const totalPages = Math.ceil(totalTransactions / limit);
+
+//     const transactionsWithAmounts = transactionRows.map((transaction) => {
+//       const amount = transaction.amount;
+//       // Inisialisasi amountSpend dan amountIncome
+//       let amountSpend = '0';
+//       let amountIncome = '0';
+
+//       if (transaction.userId === parseInt(id)) {
+//         // Jika userId sama dengan id, maka ini adalah pengeluaran
+//         amountSpend = amount || 0; // Jika amount tidak ada, set ke 0
+//       } else if (transaction.receivedId === parseInt(id)) {
+//         // Jika receivedId sama dengan id, maka ini adalah pendapatan
+//         amountIncome = amount || 0; // Jika amount tidak ada, set ke 0
+//       }
+
+//       return {
+//         ...transaction,
+//         amountSpend,
+//         amountIncome
+//       };
+//     });
+//     // Log transactions with amounts for debugging
+
+//     res.render("adminv2/pages/user/report", {
+//       title: "Transaction Report",
+//       name: req.session.user?.username,
+//       email: req.session.user?.email,
+//       username,
+//       player_id,
+//       totalIncome,
+//       totalSpend,
+//       transactions: transactionsWithAmounts,
+//       currentPage: page,
+//       totalPages,
+//     });
+//   } catch (err: any) {
+//     console.log(err);
+//     res.status(500).send("Internal Server Error");
+//   }
+// };
+
+
 export const getUserTransactions = async (req: Request, res: Response) => {
   const { id } = req.params;
   const page = parseInt(req.query.page as string) || 1;
@@ -254,7 +365,7 @@ export const getUserTransactions = async (req: Request, res: Response) => {
   const offset = (page - 1) * limit;
 
   try {
-    // Fetch user information (name)
+    // Fetch user information (name and player_id)
     const [userRows] = await pool.query<RowDataPacket[]>(
       `SELECT username, player_id FROM user WHERE id = ?`,
       [id]
@@ -267,21 +378,45 @@ export const getUserTransactions = async (req: Request, res: Response) => {
     const username = userRows[0].username;
     const player_id = userRows[0].player_id;
 
-    // Fetch total income and total spend
+    // Calculate total income from gift transactions, topups, and session transactions
     const [totalIncomeRows] = await pool.query<RowDataPacket[]>(
       `SELECT 
-        SUM(amount) AS totalIncome 
-      FROM gift_transaction 
-      WHERE receivedId = ?`,
+        COALESCE(SUM(gt.amount), 0) AS giftIncome,
+        COALESCE(SUM(tt.amount), 0) AS topupIncome
+      FROM gift_transaction gt
+      LEFT JOIN topup_transaction tt ON tt.userId = ?
+      WHERE gt.receivedId = ?`,
+      [id, id]
+    );
+
+    const [sessionIncomeRows] = await pool.query<RowDataPacket[]>(
+      `SELECT 
+        COALESCE(SUM(st.amount), 0) AS sessionIncome 
+      FROM session_transaction st 
+      WHERE st.userId = ? AND st.paid = 1`,
       [id]
     );
 
+    // Calculate total spend from gift transactions and withdraw transactions
     const [totalSpendRows] = await pool.query<RowDataPacket[]>(
       `SELECT 
-        SUM(amount) AS totalSpend 
-      FROM gift_transaction 
-      WHERE userId = ?`,
-      [id]
+        COALESCE(SUM(gt.amount), 0) AS giftSpend,
+        COALESCE(SUM(wt.amount), 0) AS withdrawSpend
+      FROM gift_transaction gt
+      LEFT JOIN withdraw_transaction wt ON wt.userId = ?
+      WHERE gt.userId = ?`,
+      [id, id]
+    );
+
+    // Sum all income and spend sources
+    const totalIncome = formatRupiah(
+      parseFloat(totalIncomeRows[0].giftIncome) +
+      parseFloat(totalIncomeRows[0].topupIncome) +
+      parseFloat(sessionIncomeRows[0].sessionIncome)
+    );
+    const totalSpend = formatRupiah(
+      parseFloat(totalSpendRows[0].giftSpend) +
+      parseFloat(totalSpendRows[0].withdrawSpend)
     );
 
     // Get transaction count for pagination
@@ -290,62 +425,54 @@ export const getUserTransactions = async (req: Request, res: Response) => {
       [id, id]
     );
     const totalTransactions = countRows[0].total;
-
-    // Fetch 10 latest transactions based on page
-    const [transactionRows] = await pool.query<RowDataPacket[]>(
-      `SELECT 
-      userId,
-      receivedId,
-        giftName, 
-        amount, 
-        description, 
-        createdAt 
-      FROM gift_transaction 
-      WHERE userId = ? OR receivedId = ? 
-      ORDER BY createdAt DESC 
-      LIMIT ? OFFSET ?`,
-      [id, id, limit, offset]
-    );
-
-    const totalIncome = totalIncomeRows[0].totalIncome
-    ? formatRupiah(parseFloat(totalIncomeRows[0].totalIncome))
-    : 'Rp 0,00';
-    const totalSpend =  totalSpendRows[0]?.totalSpend
-    ? formatRupiah(parseFloat(totalSpendRows[0].totalSpend))
-    : 'Rp 0,00';
     const totalPages = Math.ceil(totalTransactions / limit);
 
-    const transactionsWithAmounts = transactionRows.map((transaction) => {
-      const amount = transaction.amount;
-      // Inisialisasi amountSpend dan amountIncome
-      let amountSpend = '0';
-      let amountIncome = '0';
+    // Fetch transactions across all relevant tables for detailed view
+    const [transactionRows] = await pool.query<RowDataPacket[]>(
+      `SELECT 
+        'gift' AS transactionType, userId, receivedId, giftName AS description, amount, createdAt 
+      FROM gift_transaction WHERE userId = ? OR receivedId = ? 
+      UNION ALL
+      SELECT 
+        'topup' AS transactionType, userId, NULL AS receivedId, description, amount, createdAt 
+      FROM topup_transaction WHERE userId = ? 
+      UNION ALL
+      SELECT 
+        'withdraw' AS transactionType, userId, NULL AS receivedId, description, amount, createdAt 
+      FROM withdraw_transaction WHERE userId = ? 
+      UNION ALL
+      SELECT 
+        'session' AS transactionType, userId, NULL AS receivedId, CONCAT('Session payment: ', stream_sessionId) AS description, amount, createdAt 
+      FROM session_transaction WHERE userId = ? AND paid = 1 
+      ORDER BY createdAt DESC 
+      LIMIT ? OFFSET ?`,
+      [id, id, id, id, id, limit, offset]
+    );
 
-      if (transaction.userId === parseInt(id)) {
-        // Jika userId sama dengan id, maka ini adalah pengeluaran
-        amountSpend = amount || 0; // Jika amount tidak ada, set ke 0
-      } else if (transaction.receivedId === parseInt(id)) {
-        // Jika receivedId sama dengan id, maka ini adalah pendapatan
-        amountIncome = amount || 0; // Jika amount tidak ada, set ke 0
+    // Format transaction rows to include amountSpend and amountIncome fields
+    const transactionsWithAmounts = transactionRows.map((transaction) => {
+      let amountSpend = 'Rp 0,00';
+      let amountIncome = 'Rp 0,00';
+
+      if (transaction.transactionType === 'gift' && transaction.userId === parseInt(id)) {
+        amountSpend = formatRupiah(transaction.amount);
+      } else if (transaction.transactionType === 'gift' && transaction.receivedId === parseInt(id)) {
+        amountIncome = formatRupiah(transaction.amount);
+      } else if (transaction.transactionType === 'topup') {
+        amountIncome = formatRupiah(transaction.amount);
+      } else if (transaction.transactionType === 'withdraw') {
+        amountSpend = formatRupiah(transaction.amount);
+      } else if (transaction.transactionType === 'session') {
+        amountIncome = formatRupiah(transaction.amount);
       }
 
-      console.log(amountIncome)
-      console.log(amountSpend)
-      console.log(amount)
-      console.log('0')
       return {
         ...transaction,
-        // amountSpend: amountSpend
-        // ? formatRupiah(parseFloat(amountSpend))
-        // : 'Rp 0,00',
-        // amountIncome: amountIncome
-        // ? formatRupiah(parseFloat(amountIncome))
-        // : 'Rp 0,00',
         amountSpend,
-        amountIncome
+        amountIncome,
+        amountFormatted: formatRupiah(transaction.amount),
       };
     });
-    // Log transactions with amounts for debugging
 
     res.render("adminv2/pages/user/report", {
       title: "Transaction Report",

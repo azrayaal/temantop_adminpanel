@@ -27,6 +27,10 @@ export const requestWithdraw = async (req: Request, res: Response) => {
       [amount, account_number, bankId, account_name, req.user?.id]
     )
 
+   await pool.query<RowDataPacket[]>(
+     "INSERT INTO notification (title, content, userId) VALUES (?, ?, ?)",
+     ["Withdrawal Request Under Review", `Your withdrawal request of Rp ${amount} has been received and is currently under review. You will be notified once it has been processed.`, req.user?.id]
+   )
     res.json({ success: true, message: "Withdraw request successful", data: result[0] });
     
   } catch (error) {

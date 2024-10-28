@@ -39,7 +39,6 @@ import giftTransactionRouter from "./src/api/transaction/gift_transaction/router
 import transactionRouter from "./src/api/transaction/router";
 import sessionTransctionRouter from "./src/api/transaction/session_transation/router";
 import agentRouter from "./src/api/profile/agent/router";
-import launchRouter from "./src/api/launch/router";
 import voucherRouter from "./src/api/voucher/router";
 import adminrouter from "./src/api/admin/router";
 import withdrawRouter from "./src/api/withdraw/router";
@@ -160,7 +159,6 @@ app.use(`${URL}/gift_transaction`, giftTransactionRouter);
 app.use(`${URL}/transaction`, transactionRouter);
 app.use(`${URL}/session_transaction`, sessionTransctionRouter);
 app.use(`${URL}/agent`, agentRouter);
-app.use(`${URL}/launch`, launchRouter);
 app.use(`${URL}/redeem`, voucherRouter);
 app.use(`${URL}/admin`, adminrouter);
 app.use(`${URL}/withdraw`, withdrawRouter);

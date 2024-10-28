@@ -75,20 +75,18 @@
                   </tr>
                 </tbody>
               </table>
-              <button id="exportButton" class="btn btn-success mt-2">
-                Export
-              </button>
+              <button id="exportButton" class="btn btn-success mt-2">Export</button>
             </div>
-
+            
             <h4 class="mt-5">Transaction Details</h4>
             <div class="table-responsive">
               <table class="table table-bordered" id="transactionTable">
                 <thead>
                   <tr>
                     <th>No</th>
-                    <th>Gift Name</th>
-                    <th>Amount Spend</th>
-                    <th>Amount Income</th>
+                    <th>Transaction Type</th>
+                    <th>Transaction Id</th>
+                    <th>Amount</th>
                     <th>Description</th>
                     <th onclick="sortTableByDate()" style="cursor: pointer">
                       Date &#x25B2;&#x25BC;
@@ -99,17 +97,17 @@
                   <% transactions.forEach((transaction, index) => { %>
                   <tr>
                     <td><%= (currentPage - 1) * 10 + index + 1 %></td>
-                    <td><%= transaction.giftName %></td>
+                    <td><%= transaction.transactionType %></td>
+                    <td><%= transaction.id || "N/A" %></td>
                     <td class="amount-cell">
-                      <%= transaction.amountSpend %>
-                    </td>
-                    <td class="amount-cell">
-                      <%= transaction.amountIncome %>
+                      <% if (transaction.amountSpend !== 'Rp 0,00') { %>
+                        <%= transaction.amountSpend %>
+                      <% } else { %>
+                        <%= transaction.amountIncome %>
+                      <% } %>
                     </td>
                     <td><%= transaction.description %></td>
-                    <td>
-                      <%= new Date(transaction.createdAt).toLocaleString() %>
-                    </td>
+                    <td><%= new Date(transaction.createdAt).toLocaleString() %></td>
                   </tr>
                   <% }) %>
                 </tbody>

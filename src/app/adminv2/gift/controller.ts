@@ -70,6 +70,16 @@ export const actionCreate = async (req: Request, res: Response) => {
   try {
     const { giftName, giftLink, price } = req.body;
     const img = req.file?.filename || "";
+
+    const [checkGiftName] = await pool.query<Gift[]>(
+      "SELECT * FROM gift WHERE giftName = ?",
+      [giftName]
+    );
+    if (checkGiftName.length > 0) {
+      req.flash("alertMessage", "Gift name already exists");
+      req.flash("alertStatus", "danger");
+      return res.redirect("/admin/gift/create");
+    }
     // const createTime = formatDate(new Date());
     const [rows] = await pool.query(
       "INSERT INTO gift ( img, giftName, giftLink, price) VALUES ( ?, ?, ?, ?)",
@@ -110,6 +120,7 @@ export const actionDelete = async (req: Request, res: Response) => {
 
 export const indexEdit = async (req: Request, res: Response) => {
   try {
+    
     // Ambil ID dari parameter request
     const { id } = req.params;
     const alertMessage = req.flash("alertMessage");
@@ -151,6 +162,17 @@ export const actionEdit = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { giftName, giftLink, price } = req.body;
     const img = res.req.file?.filename || ""; // Use Cloudinary URL if file was uploaded
+
+    const [checkGiftName] = await pool.query<Gift[]>(
+      "SELECT * FROM gift WHERE giftName = ? AND id != ?",
+      [giftName, id]
+    );
+
+    if (checkGiftName.length > 0) {
+      req.flash("alertMessage", "Gift name already exists");
+      req.flash("alertStatus", "danger");
+      return res.redirect(`/admin/gift/edit/${id}`);
+    }
 
     // Fetch the existing gift data
     const [existingGift] = await pool.query<Gift[]>("SELECT * FROM gift WHERE id = ?", [id]);
