@@ -12,8 +12,8 @@ import { uploadSingle } from "../../middleware/uploadImage";
 
 const router = Router();
 
-router.get("/", isLoginUser, getAllGifts);
-router.get("/:id", isLoginUser, getDetailGift);
+router.get("/",  getAllGifts);
+router.get("/:id",  getDetailGift);
 router.post("/", uploadSingle("img"), isLoginUser, postGift);
 router.post("/deduct", testDeductBalance);
 router.put("/edit/:id", uploadSingle("img"), isLoginUser, editGift);
