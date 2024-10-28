@@ -87,7 +87,7 @@ export const getUserFilterTransactions = async (req: Request, res: Response) => 
         }));
       } else if (transactionType === 'topup_transaction') {
         // Query untuk mendapatkan transaksi withdraw
-        const [withdrawTransactions]: [RowDataPacket[], any] = await pool.query(
+        const [topupTransactions]: [RowDataPacket[], any] = await pool.query(
           `SELECT wt.id, wt.amount, wt.userId, user.username AS senderName
            FROM topup_transaction wt
            LEFT JOIN user ON wt.userId = user.id
@@ -97,7 +97,7 @@ export const getUserFilterTransactions = async (req: Request, res: Response) => 
         );
   
         // Format transaksi withdraw
-        transactions = withdrawTransactions.map((transaction: any) => ({
+        transactions = topupTransactions.map((transaction: any) => ({
           giftName: "TOPUP",
           description: transaction.description,
           createdAt: transaction.createdAt,
@@ -231,6 +231,27 @@ export const getUserTransactions = async (req: Request, res: Response) => {
                 transactionType: 'out',
                 senderName: withdrawTransaction.senderName || 'User',
                 receiverName: "Yong",
+              };
+            }
+          } else if (transaction.transactionType === 'topup_transaction') {
+            const [topupTransaction]: [RowDataPacket[], any] = await pool.query(
+              `SELECT wt.amount, wt.userId, wt.createdAt, user.username AS senderName
+               FROM topup_transaction wt
+               LEFT JOIN user ON wt.userId = user.id
+               WHERE wt.id = ?`,
+              [transaction.transactionId]
+            );
+            
+            if (topupTransaction.length > 0) {
+              const transactionData = topupTransaction[0]; // Accessing the first item correctly
+              transactionDetails = {
+                giftName: "TOPUP",
+                description: `Top-up of Rp ${Math.round(transactionData.amount * 100) / 100}`,
+                createdAt: transactionData.createdAt,
+                amount: Math.round(transactionData.amount * 100) / 100,
+                transactionType: 'in',
+                receiverName: transactionData.senderName || 'User',
+                senderName: "Yong",
               };
             }
           }
