@@ -85,10 +85,31 @@ export const getUserFilterTransactions = async (req: Request, res: Response) => 
           receiverName: "Yong",
           status: transaction.status,
         }));
+      } else if (transactionType === 'topup_transaction') {
+        // Query untuk mendapatkan transaksi withdraw
+        const [withdrawTransactions]: [RowDataPacket[], any] = await pool.query(
+          `SELECT wt.id, wt.amount, wt.userId, user.username AS senderName
+           FROM topup_transaction wt
+           LEFT JOIN user ON wt.userId = user.id
+           WHERE wt.userId = ?
+           ORDER BY wt.id DESC`,
+          [userId]
+        );
+  
+        // Format transaksi withdraw
+        transactions = withdrawTransactions.map((transaction: any) => ({
+          giftName: "TOPUP",
+          description: transaction.description,
+          createdAt: transaction.createdAt,
+          amount: Math.round(transaction.amount * 100) / 100,
+          transactionType: 'out',
+          receiverName: transaction.senderName || 'User',
+          senderName: "Yong",
+        }));
       } else {
         return res.status(400).json({
           success: false,
-          message: "Invalid transaction type. Please use 'gift_transaction', 'session_transaction', or 'withdraw_transaction'.",
+          message: "Invalid transaction type. Please use 'topup_transaction', 'gift_transaction', 'session_transaction', or 'withdraw_transaction'.",
         });
       }
   
