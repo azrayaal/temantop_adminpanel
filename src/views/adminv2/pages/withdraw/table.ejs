@@ -67,7 +67,7 @@
                   <td><%= withdraw[i].player_id %></td>
                   <td><%= withdraw[i].amount %></td>
                   <td><%= withdraw[i].bank_name %></td>
-                  <td><%= withdraw[i].created_at %></td>
+                  <td><%= new Date(withdraw[i].created_at).toLocaleString("en-US", { hour12: true }) %></td>
                   <td class="form-control 
                   <%=  withdraw[i].status === 'pending' ? 'bg-warning' : '' %>
                   <%=  withdraw[i].status === 'approved' ? 'bg-success' : '' %>

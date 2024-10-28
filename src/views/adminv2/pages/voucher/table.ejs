@@ -67,7 +67,7 @@
                   <td><%= v.unique_code %></td>
                   <td><%= v.is_used === 1 ? "Yes" : "No" %></td>
                   <td><%= v.formattedPrice %></td>
-                  <td><%= v.createdAt %></td>   
+                  <td><%= new Date(v.createdAt).toLocaleString("en-US", { hour12: true }) %></td>
                   <td>
                     <% if (v.is_used === 0) { %>
                       <form action="/admin/voucher/delete/<%= v.id %>?_method=DELETE" method="POST">

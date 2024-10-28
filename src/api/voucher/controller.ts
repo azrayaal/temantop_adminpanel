@@ -38,10 +38,21 @@ export const redeemVoucher = async (req: Request, res: Response) => {
       [voucherData.price, user?.id]
     );
   
-    await pool.query<RowDataPacket[]>(
+   const [result] = await pool.query<any>(
       "INSERT INTO topup_transaction (userId, amount, description) VALUES (?, ?, ?)",
       [user?.id, voucherData.price, `Redeemed voucher ${voucherData.name}(${voucher})`]
     )
+
+
+// Ambil transactionId dari hasil INSERT
+const transactionId = result.insertId;
+
+// Gunakan transactionId untuk insert ke dalam tabel transaction
+await pool.query<RowDataPacket[]>(
+  "INSERT INTO transaction (userId, transactionType, transactionId) VALUES (?, ?, ?)",
+  [user?.id, "topup_transaction", transactionId]
+);
+
   
     res.json({ success: true, message: `Success redeem voucher ${voucher}` });
   }
