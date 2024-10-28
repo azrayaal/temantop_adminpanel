@@ -198,6 +198,23 @@ export const getUserTransactions = async (req: Request, res: Response) => {
             ,
               [transaction.transactionId]
             );
+
+            const [dataStreamer] = await pool.query<RowDataPacket[]>(
+              "SELECT * from user where id = ?",
+              [transaction.stream_sessionId]
+            )
+
+            if (dataStreamer.length > 0) {
+              transactionDetails = {
+                giftName: "Paid Stream",
+                description: sessionTransactions[0].description || "Paid for watching stream",
+                createdAt: sessionTransactions[0].createdAt,
+                amount: Math.round(sessionTransactions[0].amount * 100) / 100,
+                transactionType: 'in',
+                senderName: dataUser[0].username || '',
+                receiverName: dataStreamer[0].username || '',
+              };
+            }
   
             if (sessionTransactions.length > 0) {
               const sessionTransaction = sessionTransactions[0];

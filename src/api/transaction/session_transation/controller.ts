@@ -124,11 +124,36 @@ export const createSessionTransaction = async (req: Request, res: Response) => {
     // Kurangi saldo user setelah transaksi berhasil dibuat
     const newBalanceValue = currentBalance - amount;
 
-    // Update saldo user di database
+    // Update saldo user(viewer) di database
     await pool.query(
       "UPDATE user SET balance = ? WHERE id = ?",
       [newBalanceValue, userId]
     );
+
+    // update saldo user (streamer) di database
+    const [streamerId] = await pool.query<RowDataPacket[]>(
+      "SELECT userId from stream_session WHERE id = ?",
+      [stream_sessionId]
+    )
+
+    const [dataStreamer]: [RowDataPacket[], any] = await pool.query(
+      "SELECT * FROM user WHERE id = ?",
+      [streamerId[0].userId]
+    );
+    
+
+    console.log(dataStreamer);
+
+    const currentBalanceStreamer = dataStreamer[0].balance;
+    const newBalanceValueStreamer = currentBalanceStreamer + amount;
+    
+     await pool.query(
+      "update user set balance =  ? WHERE id = ?",
+      [newBalanceValueStreamer, dataStreamer[0].userId]
+    );
+
+
+    
 
     // Kembalikan respon sukses jika transaksi berhasil dan saldo diperbarui
     return res.status(201).json({
