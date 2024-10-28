@@ -38,6 +38,8 @@ export const index = async (req: Request, res: Response) => {
         amount: formatRupiah(parseFloat(withdraw.amount)),
       };
     });
+
+    console.log(withdrawFormatted)
     // Render view with pagination data
     res.render("adminv2/pages/withdraw/index", {
       alert,
@@ -120,11 +122,11 @@ export const actionReject = async (req: Request, res: Response) => {
     if (result.affectedRows === 1) {
       // Insert a rejection notification
       await pool.query<ResultSetHeader>(
-        "INSERT INTO notification (userId, title, message, status) VALUES (?, ?, ?, ?)",
+        "INSERT INTO notifications (userId, title, message, status) VALUES (?, ?, ?, ?)",
         [
           dataWithdraw[0].userId,
-          "Withdrawal Rejected",
-          `Your withdrawal request of Rp ${dataWithdraw[0].amount} has been rejected.`,
+          "Withdrawal Request Rejected",
+          `Your withdrawal request of ${formatRupiah(parseFloat(dataWithdraw[0].amount))} has been rejected.`,
           "failed",
         ]
       );
@@ -166,6 +168,11 @@ export const actionAccept = async (req: Request, res: Response) => {
       [id]
     );
 
+    await pool.query<ResultSetHeader>(
+      "INSERT INTO withdraw_transaction (userId, amount, description, status) VALUES (?, ?, ?, ?)",
+      [id, dataWithdraw[0].amount, "withdrawal approved for " + dataWithdraw[0].amount +"by admin", "approved"]
+    )
+
     // Only proceed if the withdrawal status was successfully updated
     if (result.affectedRows === 1) {
       // Update the user's balance
@@ -176,11 +183,11 @@ export const actionAccept = async (req: Request, res: Response) => {
 
       // Insert a success notification
       await pool.query<ResultSetHeader>(
-        "INSERT INTO notification (userId, title, message, status) VALUES (?, ?, ?, ?)",
+        "INSERT INTO notifications (userId, title, message, status) VALUES (?, ?, ?, ?)",
         [
           dataWithdraw[0].userId,
-          "Withdrawal Approved",
-          `Your withdrawal of Rp ${dataWithdraw[0].amount} has been successfully approved.`,
+          "Withdrawal Request Approved",
+          `Your withdrawal of ${formatRupiah(parseFloat(dataWithdraw[0].amount))} has been successfully approved.`,
           "success",
         ]
       );

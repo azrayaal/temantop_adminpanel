@@ -66,11 +66,11 @@ export const getUserFilterTransactions = async (req: Request, res: Response) => 
       } else if (transactionType === 'withdraw_transaction') {
         // Query untuk mendapatkan transaksi withdraw
         const [withdrawTransactions]: [RowDataPacket[], any] = await pool.query(
-          `SELECT wt.amount, wt.createdAt, wt.description,wt.userId, user.username AS senderName
-           FROM withdraw wt
+          `SELECT wt.id, wt.amount, wt.status, wt.userId, user.username AS senderName
+           FROM withdraw_transaction wt
            LEFT JOIN user ON wt.userId = user.id
            WHERE wt.userId = ?
-           ORDER BY wt.createdAt DESC`,
+           ORDER BY wt.id DESC`,
           [userId]
         );
   
@@ -83,6 +83,7 @@ export const getUserFilterTransactions = async (req: Request, res: Response) => 
           transactionType: 'out',
           senderName: transaction.senderName || 'User',
           receiverName: "Yong",
+          status: transaction.status,
         }));
       } else {
         return res.status(400).json({

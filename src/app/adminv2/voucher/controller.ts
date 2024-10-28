@@ -46,6 +46,7 @@ export const index = async (req: Request, res: Response) => {
     const totalVouchers = totalResult[0]?.totalVouchers || 0;
     const totalPages = Math.ceil(totalVouchers / limit);
 
+    console.log(formattedVouchers)
     res.render("adminv2/pages/voucher/index", {
       voucher: formattedVouchers,
       alert,

@@ -27,6 +27,23 @@
               placeholder="Search for voucher name.."
             />
           </div>
+          <div class="d-flex justify-content-end mb-3">
+            <input
+              type="date"
+              id="startDate"
+              class="form-control me-2 shadow"
+              placeholder="Start Date"
+            />
+            <input
+              type="date"
+              id="endDate"
+              class="form-control me-2 shadow"
+              placeholder="End Date"
+            />
+            <button class="btn btn-primary shadow" onclick="filterByDate()">
+              Filter
+            </button>
+          </div>
           <div class="table-responsive">
             <table class="table table-bordered" id="voucherTable">
               <thead>
@@ -36,6 +53,9 @@
                   <th>Unique Code</th>
                   <th>Used</th>
                   <th>Price</th>
+                  <th onclick="sortTableByCreatedAt()" style="cursor: pointer">
+                    Created At &#x25B2;&#x25BC;
+                  </th>                  
                   <th style="width: 20%">Actions</th>
                 </tr>
               </thead>
@@ -47,6 +67,7 @@
                   <td><%= v.unique_code %></td>
                   <td><%= v.is_used === 1 ? "Yes" : "No" %></td>
                   <td><%= v.formattedPrice %></td>
+                  <td><%= v.createdAt %></td>   
                   <td>
                     <% if (v.is_used === 0) { %>
                       <form action="/admin/voucher/delete/<%= v.id %>?_method=DELETE" method="POST">
@@ -102,3 +123,104 @@
     color: red;
   }
 </style>
+
+<script>
+let sortDirectionCreatedAt = false; // Initialize sort direction for Created At column
+
+function sortTableByCreatedAt() {
+  const table = document.getElementById("voucherTable");
+  const rows = Array.from(table.rows).slice(1); // Skip header row
+
+  // Sort rows based on the Created At column (index 5)
+  const sortedRows = rows.sort((a, b) => {
+    const dateA = new Date(a.cells[5].innerText); // Created At column index 5
+    const dateB = new Date(b.cells[5].innerText);
+
+    return sortDirectionCreatedAt ? dateB - dateA : dateA - dateB;
+  });
+
+  sortDirectionCreatedAt = !sortDirectionCreatedAt; // Toggle sort direction
+
+  // Clear the table and append sorted rows
+  const tableBody = table.tBodies[0];
+  tableBody.innerHTML = ""; // Clear existing rows
+  tableBody.append(...sortedRows); // Append sorted rows
+
+  updateRowNumbers(); // Update row numbers after sorting
+}
+
+function filterByDate() {
+  const startDateInput = document.getElementById("startDate").value;
+  const endDateInput = document.getElementById("endDate").value;
+  const table = document.getElementById("voucherTable");
+  const rows = Array.from(table.rows).slice(1); // Skip header row
+
+  // Parse start and end dates if provided
+  const startDate = startDateInput ? new Date(startDateInput) : null;
+  const endDate = endDateInput ? new Date(endDateInput) : null;
+
+  rows.forEach((row) => {
+    const createdAtText = row.cells[5].innerText;
+    const createdAtDate = new Date(createdAtText);
+
+    // Check if the row should be visible
+    let isVisible = true;
+    if (startDate && createdAtDate < startDate) isVisible = false;
+    if (endDate) {
+      // Set endDate to end of the day (23:59:59) to include that day in filtering
+      endDate.setHours(23, 59, 59, 999);
+      if (createdAtDate > endDate) isVisible = false;
+    }
+
+    row.style.display = isVisible ? "" : "none"; // Show or hide row
+  });
+
+  updateRowNumbers(); // Update row numbers after filtering
+}
+function filterByDate() {
+  const startDateInput = document.getElementById("startDate").value;
+  const endDateInput = document.getElementById("endDate").value;
+  const table = document.getElementById("voucherTable");
+  const rows = Array.from(table.rows).slice(1); // Skip header row
+
+  // Parse start and end dates if provided
+  const startDate = startDateInput ? new Date(startDateInput) : null;
+  const endDate = endDateInput ? new Date(endDateInput) : null;
+
+  rows.forEach((row) => {
+    const createdAtText = row.cells[5].innerText;
+    const createdAtDate = new Date(createdAtText);
+
+    // Check if the row should be visible
+    let isVisible = true;
+    if (startDate && createdAtDate < startDate) isVisible = false;
+    if (endDate) {
+      // Set endDate to end of the day (23:59:59) to include that day in filtering
+      endDate.setHours(23, 59, 59, 999);
+      if (createdAtDate > endDate) isVisible = false;
+    }
+
+    row.style.display = isVisible ? "" : "none"; // Show or hide row
+  });
+
+  updateRowNumbers(); // Update row numbers after filtering
+}
+
+function updateRowNumbers() {
+  const table = document.getElementById("voucherTable");
+  const rows = Array.from(table.rows).slice(1); // Skip header row
+
+  let visibleRowIndex = 1; // Start row numbering from 1
+
+  rows.forEach((row) => {
+    if (row.style.display !== "none") { // Only update visible rows
+      row.cells[0].innerText = visibleRowIndex; // Set the row number
+      visibleRowIndex++; // Increment the visible row index
+    }
+  });
+}
+
+
+
+
+</script>

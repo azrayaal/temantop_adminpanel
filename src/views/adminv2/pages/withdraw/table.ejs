@@ -23,8 +23,25 @@
             id="searchInput"
             class="form-control w-25"
             onkeyup="searchTable()"
-            placeholder="Search for user id.."
+            placeholder="Search for user id or username.."
           />
+          </div>
+          <div class="d-flex justify-content-end mb-3">
+            <input
+              type="date"
+              id="startDate"
+              class="form-control me-2 shadow"
+              placeholder="Start Date"
+            />
+            <input
+              type="date"
+              id="endDate"
+              class="form-control me-2 shadow"
+              placeholder="End Date"
+            />
+            <button class="btn btn-primary shadow" onclick="filterByDate()">
+              Filter
+            </button>
           </div>
           <div class="table-responsive">
             <table class="table table-bordered" id="withdrawTable">
@@ -35,6 +52,9 @@
                   <th>user id</th>
                   <th>amount</th>
                   <th>Bank Name</th>
+                  <th onclick="sortTableByRequestDate()" style="cursor: pointer">
+                    Request Date &#x25B2;&#x25BC;
+                  </th>                  
                   <th>status</th>
                   <th style="width: 5%;">Actions</th>
                 </tr>
@@ -47,6 +67,7 @@
                   <td><%= withdraw[i].player_id %></td>
                   <td><%= withdraw[i].amount %></td>
                   <td><%= withdraw[i].bank_name %></td>
+                  <td><%= withdraw[i].created_at %></td>
                   <td class="form-control 
                   <%=  withdraw[i].status === 'pending' ? 'bg-warning' : '' %>
                   <%=  withdraw[i].status === 'approved' ? 'bg-success' : '' %>
@@ -101,3 +122,72 @@
     color: red;
   }
 </style>
+
+<script>
+let sortDirection = false; // Initialize sort direction
+
+function sortTableByRequestDate() {
+  const table = document.getElementById("withdrawTable");
+  const rows = Array.from(table.rows).slice(1); // Skip header row
+
+  // Sort rows based on the Request Date column (index 5)
+  const sortedRows = rows.sort((a, b) => {
+    const dateA = new Date(a.cells[5].innerText); // Column index 5 for Request Date
+    const dateB = new Date(b.cells[5].innerText);
+
+    return sortDirection ? dateB - dateA : dateA - dateB;
+  });
+
+  sortDirection = !sortDirection; // Toggle sort direction
+
+  // Clear the table and append sorted rows
+  const tableBody = table.tBodies[0];
+  tableBody.innerHTML = ""; // Clear existing rows
+  tableBody.append(...sortedRows); // Append sorted rows
+  updateRowNumbers(); // Update row numbers after sorting
+}
+
+function filterByDate() {
+  const startDateInput = document.getElementById("startDate").value;
+  const endDateInput = document.getElementById("endDate").value;
+  const table = document.getElementById("withdrawTable");
+  const rows = Array.from(table.rows).slice(1); // Skip header row
+
+  // Parse start and end dates if provided
+  const startDate = startDateInput ? new Date(startDateInput) : null;
+  const endDate = endDateInput ? new Date(endDateInput) : null;
+
+  rows.forEach((row) => {
+    const requestDateText = row.cells[5].innerText;
+    const requestDate = new Date(requestDateText);
+
+    // Check if the row should be visible
+    let isVisible = true;
+    if (startDate && requestDate < startDate) isVisible = false;
+    if (endDate) {
+      // Set endDate to end of the day (23:59:59) to include that day in filtering
+      endDate.setHours(23, 59, 59, 999);
+      if (requestDate > endDate) isVisible = false;
+    }
+
+    row.style.display = isVisible ? "" : "none"; // Show or hide row
+  });
+
+  updateRowNumbers(); // Update row numbers after filtering
+}
+
+function updateRowNumbers() {
+  const table = document.getElementById("withdrawTable");
+  const rows = Array.from(table.rows).slice(1); // Skip header row
+
+  let visibleRowIndex = 1; // Start row numbering from 1
+
+  rows.forEach((row) => {
+    if (row.style.display !== "none") { // Only update visible rows
+      row.cells[0].innerText = visibleRowIndex; // Set the row number
+      visibleRowIndex++; // Increment the visible row index
+    }
+  });
+}
+
+</script>

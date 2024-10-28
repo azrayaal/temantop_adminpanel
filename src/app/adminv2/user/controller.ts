@@ -389,6 +389,8 @@ export const getUserTransactions = async (req: Request, res: Response) => {
       [id, id]
     );
 
+    console.log('totalIncomeRows', totalIncomeRows)
+
     const [sessionIncomeRows] = await pool.query<RowDataPacket[]>(
       `SELECT 
         COALESCE(SUM(st.amount), 0) AS sessionIncome 
@@ -414,6 +416,9 @@ export const getUserTransactions = async (req: Request, res: Response) => {
       parseFloat(totalIncomeRows[0].topupIncome) +
       parseFloat(sessionIncomeRows[0].sessionIncome)
     );
+
+    console.log('totalIncome', totalIncome)
+
     const totalSpend = formatRupiah(
       parseFloat(totalSpendRows[0].giftSpend) +
       parseFloat(totalSpendRows[0].withdrawSpend)
@@ -430,49 +435,62 @@ export const getUserTransactions = async (req: Request, res: Response) => {
     // Fetch transactions across all relevant tables for detailed view
     const [transactionRows] = await pool.query<RowDataPacket[]>(
       `SELECT 
-        'gift' AS transactionType, userId, receivedId, giftName AS description, amount, createdAt 
-      FROM gift_transaction WHERE userId = ? OR receivedId = ? 
-      UNION ALL
-      SELECT 
-        'topup' AS transactionType, userId, NULL AS receivedId, description, amount, createdAt 
-      FROM topup_transaction WHERE userId = ? 
-      UNION ALL
-      SELECT 
-        'withdraw' AS transactionType, userId, NULL AS receivedId, description, amount, createdAt 
-      FROM withdraw_transaction WHERE userId = ? 
-      UNION ALL
-      SELECT 
-        'session' AS transactionType, userId, NULL AS receivedId, CONCAT('Session payment: ', stream_sessionId) AS description, amount, createdAt 
-      FROM session_transaction WHERE userId = ? AND paid = 1 
-      ORDER BY createdAt DESC 
-      LIMIT ? OFFSET ?`,
+          'gift' AS transactionType, id AS transactionId, userId, receivedId, giftName AS description, amount, createdAt 
+        FROM gift_transaction 
+        WHERE userId = ? OR receivedId = ? 
+        UNION ALL
+        SELECT 
+          'topup' AS transactionType, id AS transactionId, userId, NULL AS receivedId, description, amount, createdAt 
+        FROM topup_transaction 
+        WHERE userId = ? 
+        UNION ALL
+        SELECT 
+          'withdraw' AS transactionType, id AS transactionId, userId, NULL AS receivedId, description, amount, createdAt 
+        FROM withdraw_transaction 
+        WHERE userId = ? 
+        UNION ALL
+        SELECT 
+          'session' AS transactionType, id AS transactionId, userId, NULL AS receivedId, CONCAT('Session payment: ', stream_sessionId) AS description, amount, createdAt 
+        FROM session_transaction 
+        WHERE userId = ? AND paid = 1 
+        ORDER BY createdAt DESC 
+        LIMIT ? OFFSET ?`,
       [id, id, id, id, id, limit, offset]
     );
+    
+
 
     // Format transaction rows to include amountSpend and amountIncome fields
     const transactionsWithAmounts = transactionRows.map((transaction) => {
+      const amount = parseFloat(transaction.amount) || 0;
+    
       let amountSpend = 'Rp 0,00';
       let amountIncome = 'Rp 0,00';
-
+    
       if (transaction.transactionType === 'gift' && transaction.userId === parseInt(id)) {
-        amountSpend = formatRupiah(transaction.amount);
+        amountSpend = formatRupiah(amount);
       } else if (transaction.transactionType === 'gift' && transaction.receivedId === parseInt(id)) {
-        amountIncome = formatRupiah(transaction.amount);
+        amountIncome = formatRupiah(amount);
       } else if (transaction.transactionType === 'topup') {
-        amountIncome = formatRupiah(transaction.amount);
+        amountIncome = formatRupiah(amount);
       } else if (transaction.transactionType === 'withdraw') {
-        amountSpend = formatRupiah(transaction.amount);
+        amountSpend = formatRupiah(amount);
       } else if (transaction.transactionType === 'session') {
-        amountIncome = formatRupiah(transaction.amount);
+        amountIncome = formatRupiah(amount);
       }
-
+    
       return {
         ...transaction,
         amountSpend,
         amountIncome,
-        amountFormatted: formatRupiah(transaction.amount),
+        amountFormatted: formatRupiah(amount),
       };
     });
+    
+    
+    
+    
+    console.log('transactionsWithAmounts', transactionsWithAmounts)
 
     res.render("adminv2/pages/user/report", {
       title: "Transaction Report",
@@ -485,6 +503,7 @@ export const getUserTransactions = async (req: Request, res: Response) => {
       transactions: transactionsWithAmounts,
       currentPage: page,
       totalPages,
+      userId: id // Passing userId as a query parameter
     });
   } catch (err: any) {
     console.log(err);
