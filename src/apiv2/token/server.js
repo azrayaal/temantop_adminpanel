@@ -5,8 +5,8 @@ const cors = require('cors');
 const app = express();
 const port = 3000;
 
-const APP_ID = '490e5e40aa1341e8aecf54dd1f40b8b6';
-const APP_CERTIFICATE = '422c8cd387614f1fb4c1e65979b3cbbb';
+const APP_ID = '815d068f5c6f4de18d9870dc59398905';
+const APP_CERTIFICATE = 'c007515057eb45f0aed56e5d86bd1e9e';
 
 app.use(cors());
 app.use(express.json());
