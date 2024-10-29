@@ -20,6 +20,8 @@ import transactionv2Routes from "./src/app/adminv2/transaction/router";
 import authv2Routes from "./src/app/adminv2/auth/router";
 import bankRoutes from "./src/app/adminv2/bank/router";
 import withdrawRoutes from "./src/app/adminv2/withdraw/router";
+import privacryRoutes from "./src/app/adminv2/setup/privacy/router";
+import deleteRoutes from "./src/app/adminv2/setup/delete/router";
 
 //api v1
 import merchantRouter from "./src/api/merchant/router";
@@ -140,6 +142,8 @@ app.use("/admin/auth", authv2Routes);
 app.use("/admins", adminv2Routes);
 app.use("/admin/bank", bankRoutes);
 app.use("/admin/withdraw", withdrawRoutes);
+app.use("/privacy", privacryRoutes);
+app.use("/delete_account", deleteRoutes);
 
 // Route for the api
 app.use(`${URL}/token`, tokenouter);
