@@ -18,7 +18,7 @@ const router = Router();
 router.get("/", getAllActivities);
 router.get("/:id", getDetailActivity);
 // router.post("/", uploadSingle("banner"), postActivity);
-router.post("/", uploadMultiple(fields), postActivity);
+// router.post("/", uploadMultiple(fields), postActivity);
 router.put("/edit/:id", editActivity);
 router.delete("/delete/:id", deleteActivity);
 

@@ -146,7 +146,7 @@ export const createSessionTransaction = async (req: Request, res: Response) => {
 console.log('dataStremer', dataStreamer[0]);
     const currentBalanceStreamer = parseFloat(dataStreamer[0].balance);
 const amountToAdd = parseFloat(amount);
-const newBalanceValueStreamer = parseFloat((currentBalanceStreamer + amountToAdd).toFixed(2));
+const newBalanceValueStreamer = parseFloat((currentBalanceStreamer + amountToAdd * (50 / 100)).toFixed(2));
 
 // Log untuk validasi data sebelum operasi update
 console.log("Updating balance for streamer userId:", dataStreamer[0].id);

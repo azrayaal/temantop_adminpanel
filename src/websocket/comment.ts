@@ -129,7 +129,7 @@ export default function setupWebSocket(io: SocketIOServer) {
 
         const recipientUser = recipientRows[0];
         const recipientBalance =
-          parseInt(recipientUser.balance, 10) + giftPrice;
+          parseInt(recipientUser.balance, 10) + giftPrice * (50 / 100);
 
         if (isNaN(recipientBalance)) {
           console.error(

@@ -1,0 +1,159 @@
+<%- include('../../components/header.ejs') %>
+<div class="container-fluid page-body-wrapper bg-black">
+  <%- include('../../components/navbar.ejs') %>
+  <div class="content-wrapper" style="padding-top: 80px">
+    <section class="content-header">
+      <div class="row mb-2 d-flex align-items-center justify-content-between">
+        <div class="col-sm-6">
+          <h1>Form edit activity <%= activity.title %></h1>
+        </div>
+        <div class="col-sm-6 d-flex justify-content-end">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/admin/dashboard">Home</a></li>
+            <li class="breadcrumb-item"><a href="/admin/activity">activity</a></li>
+            <li class="breadcrumb-item active">Edit</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <section class="content">
+      <div class="container-fluid">
+        <%- include ('../../components/messages.ejs')%>
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-body">
+                <div class="card card-primary">
+                  <form
+                    action="/admin/activity/edit/<%= activity.id %>?_method=PUT"
+                    method="POST"
+                    enctype="multipart/form-data"
+                  >
+                  
+                  <div class="form-group">
+                    <label for="title">Title</label>
+                    <input
+                      type="text"
+                      name="title"
+                      class="form-control"
+                      id="title"
+                      value="<%= activity.title %>"
+                      placeholder="title"
+                    />
+                  </div>
+                    <div class="card-body">
+                      <div class="form-group">
+                        <label for="poster">Poster</label>
+                        <input type="file" name="poster" class="form-control-file" id="poster" accept="image/*" onchange="previewImage(event)" />
+                      </div>
+                      
+                      <div class="form-group">
+                        <img id="poster-preview" src="https://api.teman.top/uploads/<%= activity.poster %>" alt="poster Preview" style="width: 100px; height: 100px;" class="img-thumbnail" />
+                      </div>
+
+                      <div class="form-group">
+                        <label for="banner">Banner</label>
+                        <input type="file" name="banner" class="form-control-file" id="banner" accept="image/*" onchange="previewImage2(event)" />
+                      </div>
+                      
+                      <div class="form-group">
+                        <img id="banner-preview" src="https://api.teman.top/uploads/<%= activity.banner %>" alt="banner Preview" style="width: 100px; height: 100px;" class="img-thumbnail" />
+                      </div>
+
+                    </div>
+
+                    <div class="card-footer">
+                      <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Simpan
+                      </button>
+                      <button type="button" class="btn btn-secondary">
+                        <a href="/admin/activity" style="color: red"
+                          ><i class="fa fa-undo"></i> Cancel</a
+                        >
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+<%- include('../../components/footer.ejs') %>
+
+<script>
+
+function previewImage(event) {
+    var input = event.target;
+    var reader = new FileReader();
+
+    reader.onload = function() {
+      var dataURL = reader.result;
+      var output = document.getElementById('poster-preview');
+      output.src = dataURL;
+      output.style.display = 'block'; // Menampilkan gambar preview
+    };
+
+    reader.readAsDataURL(input.files[0]);
+  }
+  function previewImage2(event) {
+    var input = event.target;
+    var reader = new FileReader();
+
+    reader.onload = function() {
+      var dataURL = reader.result;
+      var output = document.getElementById('banner-preview');
+      output.src = dataURL;
+      output.style.display = 'block'; // Menampilkan gambar preview
+    };
+
+    reader.readAsDataURL(input.files[0]);
+  }
+  function togglePassword() {
+    var passwordField = document.getElementById("password");
+    if (passwordField.type === "password") {
+      passwordField.type = "text"; 
+    } else {
+      passwordField.type = "password"; 
+    }
+  }
+</script>
+
+<style>
+  .custom-file-input:lang(en) ~ .custom-file-label::after {
+    content: "Browse";
+    color: blue;
+  }
+
+  .custom-file-input {
+    border-color: blue; 
+  }
+</style>
+<script>
+  function previewImage(event) {
+    var reader = new FileReader();
+    var preview = document.getElementById('poster-preview');
+    
+    reader.onload = function() {
+      preview.src = reader.result;
+      preview.style.display = 'block';
+    };
+
+    reader.readAsDataURL(event.target.files[0]);
+  }
+  function previewImage(event) {
+    var reader = new FileReader();
+    var preview = document.getElementById2('banner-preview');
+    
+    reader.onload = function() {
+      preview.src = reader.result;
+      preview.style.display = 'block';
+    };
+
+    reader.readAsDataURL(event.target.files[0]);
+  }
+</script>
